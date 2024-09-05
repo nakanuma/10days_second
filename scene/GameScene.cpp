@@ -11,6 +11,17 @@ void GameScene::Initialize() {
 	dxCommon_ = DirectXCommon::GetInstance();
 	input_ = Input::GetInstance();
 	audio_ = Audio::GetInstance();
+
+	// ビュープロジェクション初期化
+	viewProjection_.Initialize();
+
+	///
+	///	プレイヤー関連
+	/// 
+	
+	// プレイヤーモデル生成
+	modelPlayer_ = Model::CreateFromOBJ("cube", true);
+
 }
 
 void GameScene::Update() {}

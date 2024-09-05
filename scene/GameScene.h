@@ -8,6 +8,9 @@
 #include "ViewProjection.h"
 #include "WorldTransform.h"
 
+// MyClass
+#include "Player.h"
+
 /// <summary>
 /// ゲームシーン
 /// </summary>
@@ -47,4 +50,18 @@ private: // メンバ変数
 	/// <summary>
 	/// ゲームシーン用
 	/// </summary>
+	
+	// ビュープロジェクション
+	ViewProjection viewProjection_;
+
+	///
+	///	プレイヤー関連
+	/// 
+
+	// プレイヤー本体
+	Player player_;
+
+	// プレイヤーモデルデータ
+	Model* modelPlayer_ = nullptr;
+
 };
