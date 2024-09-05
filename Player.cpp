@@ -42,6 +42,11 @@ void Player::Initialize(Model* modelPlayer, Model* modelBullet) {
 	// 引数で受け取ったモデルをNULLポインタチェックしてメンバ変数に記録
 	assert(modelBullet);
 	modelBullet_ = modelBullet;
+
+	// 弾の速度の初期値を設定
+	bulletSpeed_ = 1.0f;
+	// 発射間隔の初期値を設定（フレーム）
+	fireRate_ = 6;
 }
 
 void Player::Update() {
@@ -146,10 +151,9 @@ void Player::Attack() {
 			/// 
 
 			// 弾の速度をプレイヤーの向きに応じて計算
-			const float kBulletSpeed = 1.0f;
 			Vector3 velocity;
-			velocity.x = std::cosf(worldTransform_.rotation_.z) * kBulletSpeed; // X方向の速度
-			velocity.y = std::sinf(worldTransform_.rotation_.z) * kBulletSpeed; // Y方向の速度
+			velocity.x = std::cosf(worldTransform_.rotation_.z) * bulletSpeed_; // X方向の速度
+			velocity.y = std::sinf(worldTransform_.rotation_.z) * bulletSpeed_; // Y方向の速度
 			velocity.z = 0.0f;
 
 			///
@@ -164,7 +168,7 @@ void Player::Attack() {
 			bullets_.push_back(newBullet);
 
 			// クールダウンタイマーをリセット
-			fireCooldown_ = kFileRate_;
+			fireCooldown_ = fireRate_;
 		}
 	}
 	///
@@ -204,9 +208,14 @@ void Player::Draw(ViewProjection& viewProjection) {
 
 void Player::Debug() { 
 	ImGui::Begin("player"); 
-
-	ImGui::DragFloat3("translation", &worldTransform_.translation_.x, 0.01f);
-	ImGui::DragFloat3("rotation", &worldTransform_.rotation_.x, 0.01f);
+	// WorldTransform
+	ImGui::Text("WorldTransform");
+	ImGui::DragFloat3("Translation", &worldTransform_.translation_.x, 0.01f);
+	ImGui::DragFloat3("Rotation", &worldTransform_.rotation_.x, 0.01f);
+	// Parameter
+	ImGui::Text("Bullet Parameter");
+	ImGui::DragFloat("BulletSpeed", &bulletSpeed_, 0.01f);
+	ImGui::DragInt("FireRate(frame)", &fireRate_, 0.1f);
 
 	ImGui::End();
 }

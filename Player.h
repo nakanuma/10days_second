@@ -67,9 +67,10 @@ private:
 	Model* modelBullet_ = nullptr;
 	// 弾のリスト
 	std::list<PlayerBullet*> bullets_;
+	// 弾の速度
+	float bulletSpeed_;
 	// 発射間隔のクールダウン
 	int32_t fireCooldown_ = 0;
 	// 発射する間隔（フレーム）
-	const int32_t kFileRate_ = 6;
-
+	int32_t fireRate_;
 };
