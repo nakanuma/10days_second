@@ -59,7 +59,7 @@ private: // メンバ変数
 	/// 
 
 	// プレイヤー本体
-	Player player_;
+	Player* player_ = nullptr;
 
 	// プレイヤーモデルデータ
 	Model* modelPlayer_ = nullptr;

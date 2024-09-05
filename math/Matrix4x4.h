@@ -30,9 +30,9 @@ struct Matrix4x4 final {
 	static Matrix4x4 MakeIdentity();
 
 	// 平行移動行列
-	static Matrix4x4 MakeTranslate(const Vector3& translate);
+	static Matrix4x4 MakeTranslate(Vector3 translate);
 	// 拡大縮小行列
-	static Matrix4x4 MakeScale(const Vector3& scale);
+	static Matrix4x4 MakeScale(Vector3 scale);
 
 	// X軸回転行列
 	static Matrix4x4 MakeRotateX(float radian);

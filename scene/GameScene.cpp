@@ -4,9 +4,22 @@
 
 GameScene::GameScene() {}
 
-GameScene::~GameScene() {}
+GameScene::~GameScene() {
+	/* 各種開放 */
+	
+	///
+	///	プレイヤー関連
+	/// 
+	
+	// プレイヤーモデル
+	delete modelPlayer_;
+	// プレイヤー
+	delete player_;
+
+}
 
 void GameScene::Initialize() {
+	/* 各種初期化 */
 
 	dxCommon_ = DirectXCommon::GetInstance();
 	input_ = Input::GetInstance();
@@ -20,11 +33,20 @@ void GameScene::Initialize() {
 	/// 
 	
 	// プレイヤーモデル生成
-	modelPlayer_ = Model::CreateFromOBJ("cube", true);
+	modelPlayer_ = Model::CreateFromOBJ("player", true);
+	// プレイヤー生成と初期化
+	player_ = new Player();
+	player_->Initialize(modelPlayer_);
 
 }
 
-void GameScene::Update() {}
+void GameScene::Update() {
+	///
+	///	プレイヤー更新
+	/// 
+	
+	player_->Update();
+}
 
 void GameScene::Draw() {
 
@@ -52,6 +74,12 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに3Dオブジェクトの描画処理を追加できる
 	/// </summary>
+
+	///
+	///	プレイヤー描画
+	/// 
+	
+	player_->Draw(viewProjection_);
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();

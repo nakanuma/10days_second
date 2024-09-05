@@ -6,14 +6,26 @@
 
 class Player {
 public:
+	///
+	///	基本的な関数
+	/// 
+
 	// デストラクタ
 	~Player();
+
 	// 初期化
-	void Initialize();
+	void Initialize(Model* modelPlayer);
+
 	// 更新
 	void Update();
+	// 左スティックで移動 & 移動している方向へ向ける
+	void Move();
+
 	// 描画
-	void Draw();
+	void Draw(ViewProjection& viewProjection);
+
+	// デバッグ表示
+	void Debug();
 
 private:
 	///

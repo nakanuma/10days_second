@@ -61,7 +61,7 @@ Matrix4x4 Matrix4x4::MakeIdentity() {
 	return result;
 }
 
-Matrix4x4 Matrix4x4::MakeTranslate(const Vector3& translate) { 
+Matrix4x4 Matrix4x4::MakeTranslate(Vector3 translate) { 
 	Matrix4x4 result = MakeIdentity();
 
 	result.m[3][0] = translate.x;
@@ -71,7 +71,7 @@ Matrix4x4 Matrix4x4::MakeTranslate(const Vector3& translate) {
 	return result;
 }
 
-Matrix4x4 Matrix4x4::MakeScale(const Vector3& scale) { 
+Matrix4x4 Matrix4x4::MakeScale(Vector3 scale) { 
 	Matrix4x4 result = MakeIdentity();
 
 	result.m[0][0] = scale.x;
@@ -96,8 +96,8 @@ Matrix4x4 Matrix4x4::MakeRotateY(float radian) {
 	Matrix4x4 result = MakeIdentity();
 
 	result.m[0][0] = std::cosf(radian);
-	result.m[2][0] = std::sinf(radian);
 	result.m[0][2] = -std::sinf(radian);
+	result.m[2][0] = std::sinf(radian);
 	result.m[2][2] = std::cosf(radian);
 
 	return result;
