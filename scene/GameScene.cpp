@@ -11,6 +11,8 @@ GameScene::~GameScene() {
 	///	プレイヤー関連
 	/// 
 	
+	// プレイヤー弾モデル
+	delete modelPlayerBullet_;
 	// プレイヤーモデル
 	delete modelPlayer_;
 	// プレイヤー
@@ -34,10 +36,11 @@ void GameScene::Initialize() {
 	
 	// プレイヤーモデル生成
 	modelPlayer_ = Model::CreateFromOBJ("player", true);
+	// プレイヤー弾モデル生成
+	modelPlayerBullet_ = Model::CreateFromOBJ("playerBullet", true);
 	// プレイヤー生成と初期化
 	player_ = new Player();
-	player_->Initialize(modelPlayer_);
-
+	player_->Initialize(modelPlayer_, modelPlayerBullet_);
 }
 
 void GameScene::Update() {

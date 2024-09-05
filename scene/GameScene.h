@@ -64,4 +64,7 @@ private: // メンバ変数
 	// プレイヤーモデルデータ
 	Model* modelPlayer_ = nullptr;
 
+	// プレイヤー弾モデルデータ
+	Model* modelPlayerBullet_ = nullptr;
+
 };
