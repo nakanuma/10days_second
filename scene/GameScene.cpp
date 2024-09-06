@@ -1,5 +1,7 @@
 #include "GameScene.h"
 #include "TextureManager.h"
+#include "imgui.h"
+
 #include <cassert>
 
 GameScene::GameScene() {}
@@ -17,6 +19,17 @@ GameScene::~GameScene() {
 	delete modelPlayer_;
 	// プレイヤー
 	delete player_;
+
+	///
+	///	敵関連
+	/// 
+
+	// 敵モデル開放
+	delete modelEnemy_;
+	// 敵リスト開放
+	for (Enemy* enemy : enemies_) {
+		delete enemy;
+	}
 
 }
 
@@ -41,6 +54,13 @@ void GameScene::Initialize() {
 	// プレイヤー生成と初期化
 	player_ = new Player();
 	player_->Initialize(modelPlayer_, modelPlayerBullet_);
+	
+	///
+	///	敵関連
+	/// 
+
+	// 敵モデル生成
+	modelEnemy_ = Model::CreateFromOBJ("enemy", true);
 
 	///
 	///	線の初期化（最初から存在している外側の線4つについて）
@@ -55,6 +75,20 @@ void GameScene::Update() {
 	/// 
 	
 	player_->Update();
+
+	///
+	///	敵全ての更新
+	/// 
+	
+	for (Enemy* enemy : enemies_) {
+		enemy->Update();
+	}
+
+	///
+	///	デバッグ情報
+	/// 
+	
+	Debug();
 }
 
 void GameScene::Draw() {
@@ -91,6 +125,14 @@ void GameScene::Draw() {
 	player_->Draw(viewProjection_);
 
 	///
+	///	敵全ての描画
+	/// 
+
+	for (Enemy* enemy : enemies_) {
+		enemy->Draw(viewProjection_);
+	}
+
+	///
 	///	登録されている線全ての描画（最後に描画する必要あり）
 	/// 
 
@@ -114,6 +156,21 @@ void GameScene::Draw() {
 	Sprite::PostDraw();
 
 #pragma endregion
+}
+
+void GameScene::Debug() { 
+	ImGui::Begin("GameScene"); 
+
+	// デバッグ用で、ボタンを押したら敵をスポーンさせる
+	if (ImGui::Button("EnemySpawn")) {
+		// 生成と初期化
+		Enemy* newEnemy = new Enemy();
+		newEnemy->Initialize(modelEnemy_, kOutsideFrameTopLeftPos); // 左上からスポーンさせる
+		// リストに登録
+		enemies_.push_back(newEnemy);
+	}
+
+	ImGui::End();
 }
 
 void GameScene::InitializeLine() {
@@ -144,21 +201,21 @@ void GameScene::InitializeLine() {
 	}
 	// 下の線
 	{
-		Vector3 startRightLine = {kOutsizeLineRange, -kOutsizeLineRange, 0.0f}; // 右下
-		Vector3 endRightLine = {-kOutsizeLineRange, -kOutsizeLineRange, 0.0f};  // 左下
+		Vector3 startDownLine = {kOutsizeLineRange, -kOutsizeLineRange, 0.0f}; // 右下
+		Vector3 endDownLine = {-kOutsizeLineRange, -kOutsizeLineRange, 0.0f};  // 左下
 
 		Line newLine;
-		newLine.Initialize(startRightLine, endRightLine, &viewProjection_);
+		newLine.Initialize(startDownLine, endDownLine, &viewProjection_);
 		// lines_に追加
 		lines_.push_back(newLine);
 	}
 	// 左の線
 	{
-		Vector3 startRightLine = {-kOutsizeLineRange, -kOutsizeLineRange, 0.0f}; // 左下
-		Vector3 endRightLine = {-kOutsizeLineRange, kOutsizeLineRange, 0.0f};  // 左上
+		Vector3 startLeftLine = {-kOutsizeLineRange, -kOutsizeLineRange, 0.0f}; // 左下
+		Vector3 endLeftLine = {-kOutsizeLineRange, kOutsizeLineRange, 0.0f};    // 左上
 
 		Line newLine;
-		newLine.Initialize(startRightLine, endRightLine, &viewProjection_);
+		newLine.Initialize(startLeftLine, endLeftLine, &viewProjection_);
 		// lines_に追加
 		lines_.push_back(newLine);
 	}

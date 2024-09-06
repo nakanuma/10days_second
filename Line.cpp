@@ -6,8 +6,9 @@ void Line::Initialize(Vector3 start, Vector3 end, ViewProjection* viewProjection
 	// 引数で受け取ったデータをメンバ変数に記録
 	start_ = start;
 	end_ = end;
-	// 始点と終点からベクトルを計算
+	// 始点と終点からベクトルを計算して正規化。方向ベクトルを得る
 	vector_ = end_ - start_;
+	vector_ = Vector3::Normalize(vector_);
 
 	// プリミティブドロワーのインスタンス取得とビュープロジェクションのセット
 	primitiveDrawer_ = PrimitiveDrawer::GetInstance();

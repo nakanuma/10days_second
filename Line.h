@@ -25,6 +25,8 @@ public:
 	Vector3 GetStart() { return start_; }
 	// 終点を取得
 	Vector3 GetEnd() { return end_; }
+	// 方向ベクトルを取得
+	Vector3 GetVector() { return vector_; }
 
 private:
 	// プリミティブドロワー
@@ -38,6 +40,6 @@ private:
 	Vector3 start_;
 	// 終点
 	Vector3 end_;
-	// ベクトル
+	// 方向ベクトル（正規化）
 	Vector3 vector_;
 };

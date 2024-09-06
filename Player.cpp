@@ -1,5 +1,7 @@
 #include "Player.h"
 #include <cassert>
+#include <algorithm>
+
 #include "imgui.h"
 
 Player::~Player() {
@@ -113,6 +115,13 @@ void Player::Move() {
 			worldTransform_.rotation_.z = angle; // Z軸回転に角度を設定
 		}
 	}
+
+	// 外側枠の座標
+	const float kMoveLimit = 16.0f;
+	// 外側枠を超えないようにする処理
+	worldTransform_.translation_.x = std::clamp(worldTransform_.translation_.x, -kMoveLimit, +kMoveLimit);
+	worldTransform_.translation_.y = std::clamp(worldTransform_.translation_.y, -kMoveLimit, +kMoveLimit);
+
 }
 
 void Player::Attack() {

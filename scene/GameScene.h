@@ -13,6 +13,7 @@
 
 // MyClass
 #include "Player.h"
+#include "Enemy.h"
 #include "Line.h"
 
 /// <summary>
@@ -46,12 +47,17 @@ public: // メンバ関数
 	/// </summary>
 	void Draw();
 
+	/// <summary>
+	/// デバッグ用
+	/// </summary>
+	void Debug();
+
 	/*--------------*/
 	/* 線に関する関数 */
 	/*--------------*/
 	
 	/// <summary>
-	/// 線に関する情報を初期化（最初から存在している4つの線）
+	/// 線に関する情報を初期化（最初から存在している4つの外側の線）
 	/// </summary>
 	void InitializeLine();
 
@@ -80,9 +86,35 @@ private: // メンバ変数
 	// プレイヤー弾モデルデータ
 	Model* modelPlayerBullet_ = nullptr;
 
+	///	
+	///	敵関連
+	/// 
+
+	// 敵のリスト
+	std::list<Enemy*> enemies_;
+
+	// 敵モデルデータ
+	Model* modelEnemy_ = nullptr;
+
 	///
 	///	線（敵の移動する道のこと）
 	/// 
 
 	std::vector<Line> lines_;
+
+	///
+	///	その他
+	/// 
+	
+	// 各方向を定義（敵の移動に使用）
+	const Vector3 kRightDirection = {1.0f, 0.0f, 0.0f}; // 右移動（上のラインにいる場合）
+	const Vector3 kDownDirection = {0.0f, -1.0f, 0.0f}; // 下移動（右のラインにいる場合）
+	const Vector3 kLeftDirection = {-1.0f, 0.0f, 0.0f}; // 左移動（下のラインにいる場合）
+	const Vector3 kUpDirection = {0.0f, 1.0f, 0.0f}; // 上移動（左のラインにいる場合）
+
+	// 外側の枠の各頂点の座標を定義（敵のスポーン位置や、敵の移動方向を変えるトリガーに使用）
+	const Vector3 kOutsideFrameTopLeftPos = {-16.0f, 16.0f, 0.0f}; // 外枠の左上座標
+	const Vector3 kOutsideFrameTopRightPos = {16.0f, 16.0f, 0.0f}; // 外枠の右上座標
+	const Vector3 kOutsideFrameBottomRightPos = {16.0f, -16.0f, 0.0f}; // 外枠の右下座標
+	const Vector3 kOutsideFrameBottomLeftPos = {-16.0f, -16.0f, 0.0f}; // 外枠の左下座標
 };
