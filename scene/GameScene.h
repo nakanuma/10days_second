@@ -7,9 +7,13 @@
 #include "Sprite.h"
 #include "ViewProjection.h"
 #include "WorldTransform.h"
+#include "PrimitiveDrawer.h"
+
+#include <vector>
 
 // MyClass
 #include "Player.h"
+#include "Line.h"
 
 /// <summary>
 /// ゲームシーン
@@ -42,6 +46,15 @@ public: // メンバ関数
 	/// </summary>
 	void Draw();
 
+	/*--------------*/
+	/* 線に関する関数 */
+	/*--------------*/
+	
+	/// <summary>
+	/// 線に関する情報を初期化（最初から存在している4つの線）
+	/// </summary>
+	void InitializeLine();
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -67,4 +80,9 @@ private: // メンバ変数
 	// プレイヤー弾モデルデータ
 	Model* modelPlayerBullet_ = nullptr;
 
+	///
+	///	線（敵の移動する道のこと）
+	/// 
+
+	std::vector<Line> lines_;
 };

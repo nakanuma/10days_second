@@ -58,6 +58,8 @@ private:
 	WorldTransform worldTransform_;
 	// モデル
 	Model* modelPlayer_ = nullptr;
+	// 移動速度
+	float characterSpeed_;
 
 	///
 	///	プレイヤーの発射する弾の情報

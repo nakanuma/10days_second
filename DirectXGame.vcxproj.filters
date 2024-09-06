@@ -52,6 +52,18 @@
     <Filter Include="ソース ファイル\2d">
       <UniqueIdentifier>{814a0f6d-f847-4c45-856d-4688fa4c9e6c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ソース ファイル\player">
+      <UniqueIdentifier>{6bee0e22-17e8-4c47-9916-3ad3ff8200c6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\player">
+      <UniqueIdentifier>{6bcc74ea-7b05-4de3-8416-a275388717a8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\Line">
+      <UniqueIdentifier>{12da8db8-f20c-43df-87d4-ed7bf2562225}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\Line">
+      <UniqueIdentifier>{75a793b9-2d3d-45b5-b55c-2f70b732c19d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -74,6 +86,18 @@
     </ClCompile>
     <ClCompile Include="math\Matrix4x4.cpp">
       <Filter>ソース ファイル\math</Filter>
+    </ClCompile>
+    <ClCompile Include="3d\WorldTransform.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Player.cpp">
+      <Filter>ソース ファイル\player</Filter>
+    </ClCompile>
+    <ClCompile Include="PlayerBullet.cpp">
+      <Filter>ソース ファイル\player</Filter>
+    </ClCompile>
+    <ClCompile Include="Line.cpp">
+      <Filter>ソース ファイル\Line</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -163,6 +187,15 @@
     </ClInclude>
     <ClInclude Include="3d\ObjectColor.h">
       <Filter>ヘッダー ファイル\3d</Filter>
+    </ClInclude>
+    <ClInclude Include="Player.h">
+      <Filter>ヘッダー ファイル\player</Filter>
+    </ClInclude>
+    <ClInclude Include="PlayerBullet.h">
+      <Filter>ヘッダー ファイル\player</Filter>
+    </ClInclude>
+    <ClInclude Include="Line.h">
+      <Filter>ヘッダー ファイル\Line</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

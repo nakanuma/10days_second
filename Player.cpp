@@ -35,6 +35,9 @@ void Player::Initialize(Model* modelPlayer, Model* modelBullet) {
 	assert(modelPlayer);
 	modelPlayer_ = modelPlayer;
 
+	// 移動速度の初期値を設定
+	characterSpeed_ = 0.3f;
+
 	///
 	///	発射する弾の情報初期化
 	/// 
@@ -89,12 +92,10 @@ void Player::Move() {
 
 		// 移動ベクトル
 		Vector3 move = {0.0f, 0.0f, 0.0f};
-		// キャラクターの移動速度
-		const float kCharacterSpeed = 0.5f;
 
 		// 左スティックで移動
-		move.x += (float)joyState.Gamepad.sThumbLX / SHRT_MAX * kCharacterSpeed;
-		move.y += (float)joyState.Gamepad.sThumbLY / SHRT_MAX * kCharacterSpeed;
+		move.x += (float)joyState.Gamepad.sThumbLX / SHRT_MAX * characterSpeed_;
+		move.y += (float)joyState.Gamepad.sThumbLY / SHRT_MAX * characterSpeed_;
 
 		// ベクトルを加算して移動
 		worldTransform_.translation_ += move;
@@ -104,7 +105,7 @@ void Player::Move() {
 		///
 
 		// デッドゾーンの設定
-		const float deadZone = 0.2f;
+		const float deadZone = 0.1f;
 		// スティックが動いている場合のみ向きを更新
 		if (fabs(move.x) > deadZone || fabs(move.y) > deadZone) {
 			// 移動ベクトルの方向を計算（Z軸回転に対応する角度を計算）
@@ -213,7 +214,8 @@ void Player::Debug() {
 	ImGui::DragFloat3("Translation", &worldTransform_.translation_.x, 0.01f);
 	ImGui::DragFloat3("Rotation", &worldTransform_.rotation_.x, 0.01f);
 	// Parameter
-	ImGui::Text("Bullet Parameter");
+	ImGui::Text("Parameter");
+	ImGui::DragFloat("PlayerSpeed", &characterSpeed_, 0.01f);
 	ImGui::DragFloat("BulletSpeed", &bulletSpeed_, 0.01f);
 	ImGui::DragInt("FireRate(frame)", &fireRate_, 0.1f);
 

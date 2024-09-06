@@ -41,6 +41,12 @@ void GameScene::Initialize() {
 	// プレイヤー生成と初期化
 	player_ = new Player();
 	player_->Initialize(modelPlayer_, modelPlayerBullet_);
+
+	///
+	///	線の初期化（最初から存在している外側の線4つについて）
+	///		
+	
+	InitializeLine();
 }
 
 void GameScene::Update() {
@@ -84,6 +90,14 @@ void GameScene::Draw() {
 	
 	player_->Draw(viewProjection_);
 
+	///
+	///	登録されている線全ての描画（最後に描画する必要あり）
+	/// 
+
+	for (Line& line : lines_) {
+		line.Draw();
+	}
+
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
 #pragma endregion
@@ -100,4 +114,52 @@ void GameScene::Draw() {
 	Sprite::PostDraw();
 
 #pragma endregion
+}
+
+void GameScene::InitializeLine() {
+	// 最初から存在している4つの線を初期化して登録
+
+	// 外側の線の範囲
+	const float kOutsizeLineRange = 16.0f;
+
+	// 上の線
+	{ 
+		Vector3 startUpLine = {-kOutsizeLineRange, kOutsizeLineRange, 0.0f}; // 左上
+		Vector3 endUpLine = {kOutsizeLineRange, kOutsizeLineRange, 0.0f};    // 右上
+
+		Line newLine;
+		newLine.Initialize(startUpLine, endUpLine, &viewProjection_);
+		// lines_に追加
+		lines_.push_back(newLine);
+	}
+	// 右の線
+	{
+		Vector3 startRightLine = {kOutsizeLineRange, kOutsizeLineRange, 0.0f}; // 右上
+		Vector3 endRightLine = {kOutsizeLineRange, -kOutsizeLineRange, 0.0f};  // 右下
+
+		Line newLine;
+		newLine.Initialize(startRightLine, endRightLine, &viewProjection_);
+		// lines_に追加
+		lines_.push_back(newLine);
+	}
+	// 下の線
+	{
+		Vector3 startRightLine = {kOutsizeLineRange, -kOutsizeLineRange, 0.0f}; // 右下
+		Vector3 endRightLine = {-kOutsizeLineRange, -kOutsizeLineRange, 0.0f};  // 左下
+
+		Line newLine;
+		newLine.Initialize(startRightLine, endRightLine, &viewProjection_);
+		// lines_に追加
+		lines_.push_back(newLine);
+	}
+	// 左の線
+	{
+		Vector3 startRightLine = {-kOutsizeLineRange, -kOutsizeLineRange, 0.0f}; // 左下
+		Vector3 endRightLine = {-kOutsizeLineRange, kOutsizeLineRange, 0.0f};  // 左上
+
+		Line newLine;
+		newLine.Initialize(startRightLine, endRightLine, &viewProjection_);
+		// lines_に追加
+		lines_.push_back(newLine);
+	}
 }
