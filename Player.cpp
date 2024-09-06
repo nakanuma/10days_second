@@ -213,6 +213,7 @@ void Player::Debug() {
 	ImGui::Text("WorldTransform");
 	ImGui::DragFloat3("Translation", &worldTransform_.translation_.x, 0.01f);
 	ImGui::DragFloat3("Rotation", &worldTransform_.rotation_.x, 0.01f);
+	ImGui::DragFloat3("Scale", &worldTransform_.scale_.x, 0.01f);
 	// Parameter
 	ImGui::Text("Parameter");
 	ImGui::DragFloat("PlayerSpeed", &characterSpeed_, 0.01f);

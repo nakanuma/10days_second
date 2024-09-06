@@ -17,6 +17,15 @@ public:
 	// 描画
 	void Draw();
 
+	///
+	///	アクセッサ
+	/// 
+
+	// 始点を取得
+	Vector3 GetStart() { return start_; }
+	// 終点を取得
+	Vector3 GetEnd() { return end_; }
+
 private:
 	// プリミティブドロワー
 	PrimitiveDrawer* primitiveDrawer_ = nullptr;
