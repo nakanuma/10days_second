@@ -40,49 +40,9 @@ void Enemy::Update() {
 
 	///
 	///	敵が四つ角へ到達した時に向きを変える処理
-	/// (プレイヤーが予測線に触れたら敵が予測線の上を移動する処理を書いたら多分整合性が取れなくなるので、とりあえず仮の処理である点に留意)
-	///		
+	///
 	
-	// 誤差許容範囲を設定
-	const float epsilon = 0.01f;
-
-	// 右上の角に到達した際には下向きに移動させる
-	{ 
-		// 右上の角に到達した際には下向きに移動させる
-		if (fabs(worldTransform_.translation_.x - kOutsideFrameTopRightPos.x) < epsilon && 
-			fabs(worldTransform_.translation_.y - kOutsideFrameTopRightPos.y) < epsilon) {
-			// 微小にずれたX座標を正しい値にする
-			worldTransform_.translation_.x = kOutsideFrameBottomRightPos.x;
-			direction_ = kDownDirection;
-		}
-	}
-	// 右下の角に到達した際には左向きに移動させる
-	{
-		if (fabs(worldTransform_.translation_.x - kOutsideFrameBottomRightPos.x) < epsilon && 
-			fabs(worldTransform_.translation_.y - kOutsideFrameBottomRightPos.y) < epsilon) {
-			// 微小にずれたY座標を正しい値にする
-			worldTransform_.translation_.y = kOutsideFrameBottomLeftPos.y;
-			direction_ = kLeftDirection;
-		}
-	}
-	// 左下の角に到達した際には上向きに移動させる
-	{
-		if (fabs(worldTransform_.translation_.x - kOutsideFrameBottomLeftPos.x) < epsilon && 
-			fabs(worldTransform_.translation_.y - kOutsideFrameBottomLeftPos.y) < epsilon) {
-			// 微小にずれたX座標を正しい値にする
-			worldTransform_.translation_.x = kOutsideFrameTopLeftPos.x;
-			direction_ = kUpDirection;
-		}
-	}
-	// 左上の角に到達した際には右向きに移動させる
-	{
-		if (fabs(worldTransform_.translation_.x - kOutsideFrameTopLeftPos.x) < epsilon && 
-			fabs(worldTransform_.translation_.y - kOutsideFrameTopLeftPos.y) < epsilon) {
-			// 微小にずれたY座標を正しい値にする
-			worldTransform_.translation_.y = kOutsideFrameTopRightPos.y;
-			direction_ = kRightDirection;
-		}
-	}
+	ChangeDirection();
 
 	///
 	///	行列の更新
@@ -95,6 +55,45 @@ void Enemy::Update() {
 	/// 
 	
 	Debug();
+}
+
+void Enemy::ChangeDirection() {
+	// 誤差許容範囲を設定
+	const float epsilon = 0.01f;
+
+	// 右上の角に到達した際には下向きに移動させる
+	{
+		// 右上の角に到達した際には下向きに移動させる
+		if (fabs(worldTransform_.translation_.x - kOutsideFrameTopRightPos.x) < epsilon && fabs(worldTransform_.translation_.y - kOutsideFrameTopRightPos.y) < epsilon) {
+			// 微小にずれたX座標を正しい値にする
+			worldTransform_.translation_.x = kOutsideFrameBottomRightPos.x;
+			direction_ = kDownDirection;
+		}
+	}
+	// 右下の角に到達した際には左向きに移動させる
+	{
+		if (fabs(worldTransform_.translation_.x - kOutsideFrameBottomRightPos.x) < epsilon && fabs(worldTransform_.translation_.y - kOutsideFrameBottomRightPos.y) < epsilon) {
+			// 微小にずれたY座標を正しい値にする
+			worldTransform_.translation_.y = kOutsideFrameBottomLeftPos.y;
+			direction_ = kLeftDirection;
+		}
+	}
+	// 左下の角に到達した際には上向きに移動させる
+	{
+		if (fabs(worldTransform_.translation_.x - kOutsideFrameBottomLeftPos.x) < epsilon && fabs(worldTransform_.translation_.y - kOutsideFrameBottomLeftPos.y) < epsilon) {
+			// 微小にずれたX座標を正しい値にする
+			worldTransform_.translation_.x = kOutsideFrameTopLeftPos.x;
+			direction_ = kUpDirection;
+		}
+	}
+	// 左上の角に到達した際には右向きに移動させる
+	{
+		if (fabs(worldTransform_.translation_.x - kOutsideFrameTopLeftPos.x) < epsilon && fabs(worldTransform_.translation_.y - kOutsideFrameTopLeftPos.y) < epsilon) {
+			// 微小にずれたY座標を正しい値にする
+			worldTransform_.translation_.y = kOutsideFrameTopRightPos.y;
+			direction_ = kRightDirection;
+		}
+	}
 }
 
 void Enemy::Draw(ViewProjection& viewProjection) {

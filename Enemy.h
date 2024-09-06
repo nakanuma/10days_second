@@ -18,6 +18,10 @@ public:
 	// 更新
 	void Update();
 
+	// 敵が四つ角へ到達した時に向きを変える処理
+	// (プレイヤーが予測線に触れたら敵が予測線の上を移動する処理を書いたら多分整合性が取れなくなるので、とりあえず仮の処理である点に留意)
+	void ChangeDirection();
+
 	// 描画
 	void Draw(ViewProjection& viewProjection);
 
