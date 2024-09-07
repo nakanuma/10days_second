@@ -171,6 +171,17 @@ void GameScene::Debug() {
 	}
 
 	ImGui::End();
+
+	ImGui::Begin("Enemy");
+
+	// 敵の番号と座標を表示
+	uint32_t enemyIndex = 0;
+	for (Enemy* enemy : enemies_) {
+		ImGui::Text("Enemy[%d] translation:(%.2f, %.2f, %.2f)", enemyIndex, enemy->GetWorldPosition().x, enemy->GetWorldPosition().y, enemy->GetWorldPosition().z);
+		enemyIndex++;
+	}
+
+	ImGui::End();
 }
 
 void GameScene::InitializeLine() {
