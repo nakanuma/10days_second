@@ -19,6 +19,17 @@ GameScene::~GameScene() {
 	delete player_;
 
 	///
+	///	敵
+	/// 
+
+	// 敵モデル
+	delete modelEnemy_;
+	// 敵全てを開放
+	for (Enemy* enemy : enemies_) {
+		delete enemy;
+	}
+
+	///
 	///	レーザー
 	/// 
 	
@@ -51,7 +62,13 @@ void GameScene::Initialize() {
 	// プレイヤー生成と初期化
 	player_ = new Player();
 	player_->Initialize(modelPlayer_, modelLaser_);
+
+	///
+	///	敵関連
+	/// 
 	
+	// 敵モデル生成
+	modelEnemy_ = Model::CreateFromOBJ("enemy", true);
 }
 
 void GameScene::Update() {
@@ -60,6 +77,28 @@ void GameScene::Update() {
 	/// 
 	
 	player_->Update();
+
+	///
+	///	敵全ての更新
+	/// 
+
+	for (Enemy* enemy : enemies_) {
+		enemy->Update();
+	}
+	// 死んだ敵をリストから削除
+	enemies_.remove_if([](Enemy* enemy) {
+		if (enemy->IsDead()) {
+			delete enemy;
+			return true;
+		}
+		return false;
+	});
+
+	///
+	///	全ての衝突判定を行う
+	/// 
+
+	CheckAllCollision();
 
 	///
 	///	デバッグ情報
@@ -101,6 +140,14 @@ void GameScene::Draw() {
 	
 	player_->Draw(viewProjection_);
 
+	///
+	///	敵全ての描画
+	/// 
+
+	for (Enemy* enemy : enemies_) {
+		enemy->Draw(viewProjection_);
+	}
+
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
 #pragma endregion
@@ -122,5 +169,39 @@ void GameScene::Draw() {
 void GameScene::Debug() { 
 	ImGui::Begin("GameScene"); 
 
+	// 敵を出現させる
+	if (ImGui::Button("EnemySpawn")) {
+		Enemy* newEnemy = new Enemy();
+		newEnemy->Initialize(modelEnemy_, {4.0f, 12.0f, 0.0f});
+
+		enemies_.push_back(newEnemy);
+	}
+
 	ImGui::End();
+}
+
+void GameScene::CheckAllCollision() {
+	#pragma region プレイヤーのレーザー->敵
+
+	// プレイヤーのレーザーが有効である場合
+	if (player_->GetLaser().IsActive()) {
+		Laser& laser = player_->GetLaser();
+		OBBCollider laserOBB = laser.GetOBB();
+
+		// 全ての敵に対して衝突判定
+		for (Enemy* enemy : enemies_) {
+			// 敵を球体として扱う
+			SphereCollider enemyCollider;
+			enemyCollider.center = enemy->GetWorldPosition();
+			enemyCollider.radius = enemy->GetRadius();
+
+			// 衝突判定を行う
+			if (laserOBB.IsCollision(enemyCollider)) {
+				// 衝突した際の処理
+				enemy->OnCollision();
+			}
+		}
+	}
+
+	#pragma endregion
 }

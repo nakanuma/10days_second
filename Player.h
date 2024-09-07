@@ -45,6 +45,8 @@ public:
 	Vector3 GetWorldPosition();
 	// 半径を取得
 	float GetRadius() { return kRadius_; }
+	// レーザーの取得
+	Laser& GetLaser() { return laser_; }
 
 private:
 	///

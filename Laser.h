@@ -37,6 +37,8 @@ public:
 	bool IsActive() { return isActive_; }
 	// レーザーの有効/無効を設定
 	void SetActive(bool flag) { isActive_ = flag; }
+	// OBBの取得
+	const OBBCollider& GetOBB() { return obb_; }
 
 private:
 	// ワールドトランスフォーム

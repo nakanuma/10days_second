@@ -9,10 +9,11 @@
 #include "WorldTransform.h"
 #include "PrimitiveDrawer.h"
 
-#include <vector>
+#include <list>
 
 // MyClass
 #include "Player.h"
+#include "Enemy.h"
 
 /// <summary>
 /// ゲームシーン
@@ -50,6 +51,11 @@ public: // メンバ関数
 	/// </summary>
 	void Debug();
 
+	/// <summary>
+	/// 全ての衝突判定
+	/// </summary>
+	void CheckAllCollision();
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -71,6 +77,16 @@ private: // メンバ変数
 
 	// プレイヤーモデルデータ
 	Model* modelPlayer_ = nullptr;
+
+	///
+	///	敵
+	/// 
+
+	// 敵のリスト
+	std::list<Enemy*> enemies_;
+	
+	// 敵のモデル
+	Model* modelEnemy_ = nullptr;
 
 	///
 	///	レーザー

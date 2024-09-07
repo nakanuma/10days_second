@@ -26,7 +26,7 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 	// ワールドトランスフォーム初期化
 	worldTransform_.Initialize();
 	// X軸を回転させてモデルの上面を画面の向きに回転
-	worldTransform_.rotation_ = {1.571f, 0.0f, 1.571f};
+	worldTransform_.rotation_ = {0.0f, 0.0f, 1.571f};
 
 	// 引数で受け取ったモデルをNULLポインタチェックしてメンバ変数に記録
 	assert(modelPlayer);
@@ -124,7 +124,7 @@ void Player::Attack() {
 			modelLaser_, 
 			worldTransform_.translation_, 
 			worldTransform_.rotation_, 
-			Vector3{Laser::kLength, 0.01f, worldTransform_.scale_.z}
+			Vector3{Laser::kLength, worldTransform_.scale_.y, 0.01f}
 		);
 	// 押していない場合はレーザーを無効化
 	} else {
