@@ -6,7 +6,6 @@
 #include <list>
 
 // MyClass
-#include "PlayerBullet.h"
 
 class Player {
 public:
@@ -21,15 +20,13 @@ public:
 	/// 初期化
 	/// </summary>
 	/// <param name="modelPlayer">プレイヤー本体のモデル</param>
-	/// <param name="modelBullet">プレイヤーの弾のモデル</param>
-	void Initialize(Model* modelPlayer, Model* modelBullet);
+	void Initialize(Model* modelPlayer);
 
 	// 更新
 	void Update();
-	// 左スティックで移動（移動している方向へプレイヤーを向ける）
+	// 左スティックで移動
+	// 右スティックで角度変更
 	void Move();
-	// Aボタンで弾を発射する処理（プレイヤーの向いている方向へ発射）
-	void Attack();
 
 	// 描画
 	void Draw(ViewProjection& viewProjection);
@@ -65,19 +62,4 @@ private:
 	float characterSpeed_;
 	// 半径
 	const float kRadius_ = 1.0f;
-
-	///
-	///	プレイヤーの発射する弾の情報
-	/// 
-	
-	// モデル
-	Model* modelBullet_ = nullptr;
-	// 弾のリスト
-	std::list<PlayerBullet*> bullets_;
-	// 弾の速度
-	float bulletSpeed_;
-	// 発射間隔のクールダウン
-	int32_t fireCooldown_ = 0;
-	// 発射する間隔（フレーム）
-	int32_t fireRate_;
 };

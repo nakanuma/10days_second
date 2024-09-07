@@ -13,8 +13,6 @@
 
 // MyClass
 #include "Player.h"
-#include "Enemy.h"
-#include "Line.h"
 
 /// <summary>
 /// ゲームシーン
@@ -52,15 +50,6 @@ public: // メンバ関数
 	/// </summary>
 	void Debug();
 
-	/*--------------*/
-	/* 線に関する関数 */
-	/*--------------*/
-	
-	/// <summary>
-	/// 線に関する情報を初期化（最初から存在している4つの外側の線）
-	/// </summary>
-	void InitializeLine();
-
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -82,26 +71,6 @@ private: // メンバ変数
 
 	// プレイヤーモデルデータ
 	Model* modelPlayer_ = nullptr;
-
-	// プレイヤー弾モデルデータ
-	Model* modelPlayerBullet_ = nullptr;
-
-	///	
-	///	敵関連
-	/// 
-
-	// 敵のリスト
-	std::list<Enemy*> enemies_;
-
-	// 敵モデルデータ
-	Model* modelEnemy_ = nullptr;
-
-	///
-	///	線（敵の移動する道のこと）
-	/// 
-
-	// 外側の4つの線
-	std::vector<Line> lines_;
 
 	///
 	///	その他
