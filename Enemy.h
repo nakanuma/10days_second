@@ -3,6 +3,9 @@
 #include "ViewProjection.h"
 #include "Model.h"
 
+// MyClass
+#include "Line.h"
+
 class Enemy {
 public:
 	// デストラクタ
@@ -46,7 +49,7 @@ private:
 	WorldTransform worldTransform_;
 	// モデル
 	Model* modelEnemy_ = nullptr;
-	// 移動速度（あとでランダムに変えるかも）
+	// 移動速度（今は固定。あとでランダムに変えるかも）
 	float speed_;
 	// 現在の向き
 	Vector3 direction_;

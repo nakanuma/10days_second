@@ -41,7 +41,10 @@ public:
 	///	アクセッサ
 	/// 
 	
+	// ワールド座標取得
 	Vector3 GetWorldPosition();
+	// 半径を取得
+	float GetRadius() { return kRadius_; }
 
 private:
 	///
@@ -60,6 +63,8 @@ private:
 	Model* modelPlayer_ = nullptr;
 	// 移動速度
 	float characterSpeed_;
+	// 半径
+	const float kRadius_ = 1.0f;
 
 	///
 	///	プレイヤーの発射する弾の情報

@@ -26,7 +26,6 @@ void Enemy::Initialize(Model* modelEnemy, Vector3 spawnPosition) {
 	// 最初は左上で湧いて、右に進んでいく想定
 	direction_ = kRightDirection;
 
-
 	// スポーン時に原点に一瞬現れてしまうのを回避するために、ワールド行列を更新
 	worldTransform_.UpdateMatrix();
 }
