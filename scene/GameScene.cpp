@@ -18,6 +18,11 @@ GameScene::~GameScene() {
 	// プレイヤー
 	delete player_;
 
+	///
+	///	レーザー
+	/// 
+	
+	delete modelLaser_;
 }
 
 void GameScene::Initialize() {
@@ -31,6 +36,13 @@ void GameScene::Initialize() {
 	viewProjection_.Initialize();
 
 	///
+	///	レーザー
+	/// 
+
+	// レーザーモデル生成
+	modelLaser_ = Model::CreateFromOBJ("laser", true);
+
+	///
 	///	プレイヤー関連
 	/// 
 	
@@ -38,7 +50,7 @@ void GameScene::Initialize() {
 	modelPlayer_ = Model::CreateFromOBJ("player", true);
 	// プレイヤー生成と初期化
 	player_ = new Player();
-	player_->Initialize(modelPlayer_);
+	player_->Initialize(modelPlayer_, modelLaser_);
 	
 }
 

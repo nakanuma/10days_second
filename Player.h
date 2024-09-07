@@ -6,6 +6,7 @@
 #include <list>
 
 // MyClass
+#include "Laser.h"
 
 class Player {
 public:
@@ -20,13 +21,15 @@ public:
 	/// 初期化
 	/// </summary>
 	/// <param name="modelPlayer">プレイヤー本体のモデル</param>
-	void Initialize(Model* modelPlayer);
+	void Initialize(Model* modelPlayer, Model* modelLaser);
 
 	// 更新
 	void Update();
 	// 左スティックで移動
 	// 右スティックで角度変更
 	void Move();
+	// RBでレーザーを発射
+	void Attack();
 
 	// 描画
 	void Draw(ViewProjection& viewProjection);
@@ -62,4 +65,13 @@ private:
 	float characterSpeed_;
 	// 半径
 	const float kRadius_ = 1.0f;
+
+	///
+	///	レーザー
+	/// 
+	
+	// レーザー
+	Laser laser_;
+	// モデル
+	Model* modelLaser_ = nullptr;
 };

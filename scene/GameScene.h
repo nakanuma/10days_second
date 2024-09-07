@@ -73,6 +73,12 @@ private: // メンバ変数
 	Model* modelPlayer_ = nullptr;
 
 	///
+	///	レーザー
+	/// 
+
+	Model* modelLaser_ = nullptr;
+
+	///
 	///	その他
 	/// 
 	

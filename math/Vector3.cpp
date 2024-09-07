@@ -45,6 +45,13 @@ Vector3& Vector3::operator/=(const float& scalar) {
 	return *this;
 }
 
+Vector3 Vector3::Multiply(float scalar, const Vector3& v) { 
+	return Vector3{
+		scalar * v.x, 
+		scalar * v.y, 
+		scalar * v.z}; 
+}
+
 float Vector3::Length(const Vector3& v) { 
 	return std::sqrt(v.x * v.x + v.y * v.y + v.z * v.z); 
 }

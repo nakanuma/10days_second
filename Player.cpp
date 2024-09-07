@@ -11,7 +11,7 @@ Player::~Player() {
 	
 }
 
-void Player::Initialize(Model* modelPlayer) {
+void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 	///
 	///	汎用機能初期化
 	///		
@@ -35,6 +35,12 @@ void Player::Initialize(Model* modelPlayer) {
 	// 移動速度の初期値を設定
 	characterSpeed_ = 0.3f;
 
+	///
+	///	レーザー関連の初期化
+	/// 
+	
+	assert(modelLaser);
+	modelLaser_ = modelLaser;
 }
 
 void Player::Update() {
@@ -44,6 +50,13 @@ void Player::Update() {
 
 	// 左スティックで移動 & 移動している方向へ向ける
 	Move();
+
+	///
+	///	攻撃
+	///		
+
+	// RBでレーザーを発射
+	Attack();
 
 	///
 	///	行列の更新
@@ -63,11 +76,10 @@ void Player::Move() {
 	XINPUT_STATE joyState;
 	Input::GetInstance()->GetJoystickState(0, joyState);
 
+	///
+	///	左スティックでプレイヤーの左右移動
+	///
 	{
-		///
-		///	プレイヤーの移動
-		///
-
 		// 移動ベクトル
 		Vector3 move = {0.0f, 0.0f, 0.0f};
 
@@ -79,11 +91,10 @@ void Player::Move() {
 		worldTransform_.translation_ += move;
 	}
 
+	///
+	/// 右スティックでプレイヤーの向きを制御
+	///
 	{
-		///
-		/// 右スティックでプレイヤーの向きを制御
-		///
-
 		Vector3 rotation = worldTransform_.rotation_;
 		float rightStickX = (float)joyState.Gamepad.sThumbRX / SHRT_MAX;
 		float rightStickY = (float)joyState.Gamepad.sThumbRY / SHRT_MAX;
@@ -101,6 +112,31 @@ void Player::Move() {
 	}
 }
 
+void Player::Attack() {
+	// ゲームパッド状態取得
+	XINPUT_STATE joyState;
+	Input::GetInstance()->GetJoystickState(0, joyState);
+
+	// RBを押した場合
+	if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) {
+		// レーザーの初期化
+		laser_.Initialize(
+			modelLaser_, 
+			worldTransform_.translation_, 
+			worldTransform_.rotation_, 
+			Vector3{Laser::kLength, 0.01f, worldTransform_.scale_.z}
+		);
+	// 押していない場合はレーザーを無効化
+	} else {
+		laser_.SetActive(false);
+	}
+
+	// 有効な場合、レーザーを更新
+	if (laser_.IsActive()) {
+		laser_.Update(worldTransform_.translation_, worldTransform_.rotation_);
+	}
+}
+
 void Player::Draw(ViewProjection& viewProjection) {
 	///
 	///	プレイヤー本体描画
@@ -108,6 +144,14 @@ void Player::Draw(ViewProjection& viewProjection) {
 	
 	modelPlayer_->Draw(worldTransform_, viewProjection);
 
+	///
+	///	レーザーの描画
+	/// 
+	
+	// 有効な場合のみ描画
+	if (laser_.IsActive()) {
+		laser_.Draw(viewProjection);
+	}
 }
 
 void Player::Debug() { 
