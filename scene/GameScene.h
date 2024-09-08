@@ -97,8 +97,10 @@ private: // メンバ変数
 	///	レーザー関連
 	/// 
 
-	// モデル
+	// モデル（敵のレーザー）
 	Model* modelLaser_ = nullptr;
+	// モデル（プレイヤーのレーザー）
+	Model* modelPlayerLaser_ = nullptr;
 
 	///
 	///	その他

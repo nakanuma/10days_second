@@ -36,6 +36,7 @@ GameScene::~GameScene() {
 	/// 
 	
 	delete modelLaser_;
+	delete modelPlayerLaser_;
 }
 
 void GameScene::Initialize() {
@@ -54,6 +55,8 @@ void GameScene::Initialize() {
 
 	// レーザーモデル生成
 	modelLaser_ = Model::CreateFromOBJ("laser", true);
+	// レーザーモデル（プレイヤー）生成
+	modelPlayerLaser_ = Model::CreateFromOBJ("playerLaser", true);
 
 	///
 	///	プレイヤー関連
@@ -63,7 +66,7 @@ void GameScene::Initialize() {
 	modelPlayer_ = Model::CreateFromOBJ("player", true);
 	// プレイヤー生成と初期化
 	player_ = new Player();
-	player_->Initialize(modelPlayer_, modelLaser_);
+	player_->Initialize(modelPlayer_, modelPlayerLaser_);
 
 	///
 	///	敵関連
