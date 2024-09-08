@@ -3,6 +3,9 @@
 #include "ViewProjection.h"
 #include "Model.h"
 
+// MyClass
+
+
 class Enemy {
 public:
 	~Enemy();
@@ -20,6 +23,11 @@ public:
 	/// <param name="incrementSize">毎フレームの敵のサイズ増加量</param>
 	void OnCollision(float incrementSize);
 
+	/// <summary>
+	/// デバッグ
+	/// </summary>
+	void Debug();
+
 	///
 	///	アクセッサ
 	/// 
@@ -30,6 +38,8 @@ public:
 	Vector3 GetWorldPosition();
 	// 死亡したかを取得
 	bool IsDead() { return isDead_; }
+	// 一番下まで到達したかを取得
+	bool HasReachedBottom() { return hasReachedBottom_; }
 
 private:
 	// ワールドトランスフォーム
@@ -42,4 +52,6 @@ private:
 	bool isDead_ = false;
 	// 自動で下降する速度
 	float fallSpeed_;
+	// 一番下まで到達したか
+	bool hasReachedBottom_ = false;
 };

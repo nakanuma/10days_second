@@ -122,7 +122,7 @@ void Player::Move() {
 			}
 
 			// 角度を滑らかに補間
-			const float smoothingFactor = 0.1f; // 補間の速さ（0.1はゆっくり、1.0はすぐにターゲット角度に）
+			const float smoothingFactor = 0.04f; // 補間の速さ（低いほどゆっくり、1.0はすぐにターゲット角度になる）
 			rotation.z += smoothingFactor * angleDifference;
 
 			// 回転角度を -π ～ +π の範囲にクランプ

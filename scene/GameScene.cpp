@@ -218,8 +218,10 @@ void GameScene::CheckAllCollision() {
 
 			// 衝突判定を行う
 			if (laserOBB.IsCollision(enemyCollider)) {
-				// 衝突した際の処理
-				enemy->OnCollision(kIncrementSize);
+				// 敵が地面にいないときのみ衝突した際の処理を呼ぶ（地面にいる敵を大きくしないようにするため）
+				if (!enemy->HasReachedBottom()) {
+					enemy->OnCollision(kIncrementSize);
+				}
 			}
 		}
 	}

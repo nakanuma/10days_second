@@ -1,4 +1,7 @@
 #include "Enemy.h"
+
+#include "imgui.h"
+
 #include <cassert>
 #include <algorithm>
 
@@ -42,11 +45,21 @@ void Enemy::Update() {
 
 	const float kStopYposition = -18.0f;
 	worldTransform_.translation_.y = (std::max)(worldTransform_.translation_.y, kStopYposition);
+	// 一番したまで到達したことを示す
+	if (worldTransform_.translation_.y <= kStopYposition) {
+		hasReachedBottom_ = true;
+	}
 
 	///
 	///	行列の更新
 	/// 
 	worldTransform_.UpdateMatrix();
+
+	///
+	///	デバッグ表示
+	/// 
+	
+	Debug();
 }
 
 void Enemy::Draw(ViewProjection& viewProjection) {
@@ -71,6 +84,15 @@ void Enemy::OnCollision(float incrementSize) {
 
 	// あとでサイズとかを変える処理に変更するけどデバッグ用で一旦死亡させる
 	/*isDead_ = true;*/
+}
+
+void Enemy::Debug(){ 
+	ImGui::Begin("Enemy");
+
+	ImGui::Text("radius : %.2f", radius_);
+	ImGui::Text("reachedBottom : %d", hasReachedBottom_);
+
+	ImGui::End();
 }
 
 Vector3 Enemy::GetWorldPosition() { 
