@@ -31,9 +31,14 @@ void Enemy::Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position) {
 
 void Enemy::Update() {
 	///
-	///	自動で下降させる
+	///	自動で下降させる処理
 	/// 
-	worldTransform_.translation_.y -= fallSpeed_;
+
+	// 現在の半径に基づいて降下速度を調整（大きければ大きいほど早く降下させるため）
+	float adjustedFallspeed = fallSpeed_ + (radius_ * 0.03f); // ここの値は要調整
+
+	// 自動で降下する速度の分だけ降下させる
+	worldTransform_.translation_.y -= adjustedFallspeed;
 
 	///	
 	///	スケールと半径を同期させる（レーザーが当たると大きくなるにあたって、見た目と当たり判定を合わせる）
