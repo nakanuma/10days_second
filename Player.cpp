@@ -1,6 +1,7 @@
 #include "Player.h"
 #include <cassert>
 #include <algorithm>
+#include <numbers>
 
 #include "imgui.h"
 
@@ -34,6 +35,11 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 
 	// 移動速度の初期値を設定
 	characterSpeed_ = 0.3f;
+	// 体力の初期値を設定
+	hp_ = 3;
+	// レーザー射撃中/非射撃中の自動上昇・下降の速度の初期値を設定
+	autoAscendingSpeed_ = 0.1f;
+	autoDescendingSpeed_ = 0.15f;
 
 	///
 	///	レーザー関連の初期化
@@ -100,16 +106,59 @@ void Player::Move() {
 		float rightStickY = (float)joyState.Gamepad.sThumbRY / SHRT_MAX;
 
 		// デッドゾーンの設定
-		const float deadZone = 0.1f;
+		const float deadZone = 0.01f;
 		if (fabs(rightStickX) > deadZone || fabs(rightStickY) > deadZone) {
 			// 右スティックの方向を角度に変換
-			float angle = atan2f(rightStickY, rightStickX);
-			rotation.z = angle; // Z軸回転に適用
+			float targetAngle = atan2f(rightStickY, rightStickX);
+
+			// 現在の角度と目標角度の差を計算
+			float angleDifference = targetAngle - rotation.z;
+
+			// 角度差を -π ～ +π の範囲に正規化
+			if (angleDifference > std::numbers::pi_v<float>) {
+				angleDifference -= 2.0f * std::numbers::pi_v<float>;
+			} else if (angleDifference < -std::numbers::pi_v<float>) {
+				angleDifference += 2.0f * std::numbers::pi_v<float>;
+			}
+
+			// 角度を滑らかに補間
+			const float smoothingFactor = 0.1f; // 補間の速さ（0.1はゆっくり、1.0はすぐにターゲット角度に）
+			rotation.z += smoothingFactor * angleDifference;
+
+			// 回転角度を -π ～ +π の範囲にクランプ
+			if (rotation.z > std::numbers::pi_v<float>) {
+				rotation.z -= 2.0f * std::numbers::pi_v<float>;
+			} else if (rotation.z < -std::numbers::pi_v<float>) {
+				rotation.z += 2.0f * std::numbers::pi_v<float>;
+			}
 		}
 
 		// プレイヤーの回転を更新
 		worldTransform_.rotation_ = rotation;
 	}
+
+	///
+	///	射撃中のレーザーのON/OFFによって、自動で上昇と下降を行う
+	/// 
+
+	// レーザーが有効な場合、自動で上昇
+	if (laser_.IsActive()) {
+		worldTransform_.translation_.y += autoAscendingSpeed_;
+	} else {
+		worldTransform_.translation_.y -= autoDescendingSpeed_;
+	}
+
+	///
+	///	範囲外へ行かないようにする
+	/// 
+	
+	// 移動限界座標
+	const float kMoveLimitX = 34.0f;
+	const float kMoveLimitY = 18.0f;
+
+	// 範囲を超えない処理
+	worldTransform_.translation_.x = std::clamp(worldTransform_.translation_.x, -kMoveLimitX, +kMoveLimitX);
+	worldTransform_.translation_.y = std::clamp(worldTransform_.translation_.y, -kMoveLimitY, +kMoveLimitY);
 }
 
 void Player::Attack() {
@@ -164,6 +213,9 @@ void Player::Debug() {
 	// Parameter
 	ImGui::Text("Parameter");
 	ImGui::DragFloat("PlayerSpeed", &characterSpeed_, 0.01f);
+	ImGui::Text("HP : %d", hp_);
+	ImGui::DragFloat("AscendingSpeed", &autoAscendingSpeed_, 0.01f);
+	ImGui::DragFloat("DescendingSpeed", &autoDescendingSpeed_, 0.01f);
 
 	ImGui::End();
 }

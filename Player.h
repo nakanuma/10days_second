@@ -25,8 +25,7 @@ public:
 
 	// 更新
 	void Update();
-	// 左スティックで移動
-	// 右スティックで角度変更
+	// 左スティックで左右移動・右スティックで角度変更・レーザー射撃状態によって自動で上昇下降・プレイヤーが範囲外へ行かないようにする処理
 	void Move();
 	// RBでレーザーを発射
 	void Attack();
@@ -67,13 +66,23 @@ private:
 	float characterSpeed_;
 	// 半径
 	const float kRadius_ = 1.0f;
+	// 体力
+	uint32_t hp_;
 
 	///
-	///	レーザー
+	///	レーザー関連の情報
 	/// 
 	
 	// レーザー
 	Laser laser_;
 	// モデル
 	Model* modelLaser_ = nullptr;
+
+	///
+	///	その他パラメーターなど
+	/// 
+	
+	// レーザー射撃中/非射撃中の自動上昇・下降の速度
+	float autoAscendingSpeed_;
+	float autoDescendingSpeed_;
 };

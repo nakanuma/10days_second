@@ -14,8 +14,11 @@ public:
 	// 描画
 	void Draw(ViewProjection& viewProjection);
 
-	// 衝突時コールバック
-	void OnCollision();
+	/// <summary>
+	/// 衝突時コールバック（サイズを大きくする : プレイヤーのレーザーと敵のレーザーで増加量を変更）
+	/// </summary>
+	/// <param name="incrementSize">毎フレームの敵のサイズ増加量</param>
+	void OnCollision(float incrementSize);
 
 	///
 	///	アクセッサ
@@ -37,4 +40,6 @@ private:
 	float radius_;
 	// 死亡したか
 	bool isDead_ = false;
+	// 自動で下降する速度
+	float fallSpeed_;
 };

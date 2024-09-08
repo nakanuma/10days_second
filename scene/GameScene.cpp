@@ -3,6 +3,8 @@
 #include "imgui.h"
 
 #include <cassert>
+#include <random>
+#include <numbers>
 
 GameScene::GameScene() {}
 
@@ -69,6 +71,13 @@ void GameScene::Initialize() {
 	
 	// 敵モデル生成
 	modelEnemy_ = Model::CreateFromOBJ("enemy", true);
+
+	///
+	///	その他
+	/// 
+	
+	// ゲームシーン経過時間の初期化
+	gameTime_ = 0;
 }
 
 void GameScene::Update() {
@@ -94,6 +103,9 @@ void GameScene::Update() {
 		return false;
 	});
 
+	// 敵の自動生成を行う
+	/*EnemyGeneration();*/
+
 	///
 	///	全ての衝突判定を行う
 	/// 
@@ -105,6 +117,9 @@ void GameScene::Update() {
 	/// 
 	
 	Debug();
+
+	/// ゲームシーン経過時間をカウント
+	gameTime_++;
 }
 
 void GameScene::Draw() {
@@ -177,11 +192,17 @@ void GameScene::Debug() {
 		enemies_.push_back(newEnemy);
 	}
 
+	// ゲームシーン経過時間を表示
+	ImGui::Text("GameTime : %d", gameTime_);
+
 	ImGui::End();
 }
 
 void GameScene::CheckAllCollision() {
 	#pragma region プレイヤーのレーザー->敵
+
+	// プレイヤーのレーザーが敵のサイズを増加させる量
+	const float kIncrementSize = 0.01f;
 
 	// プレイヤーのレーザーが有効である場合
 	if (player_->GetLaser().IsActive()) {
@@ -198,10 +219,53 @@ void GameScene::CheckAllCollision() {
 			// 衝突判定を行う
 			if (laserOBB.IsCollision(enemyCollider)) {
 				// 衝突した際の処理
-				enemy->OnCollision();
+				enemy->OnCollision(kIncrementSize);
 			}
 		}
 	}
 
 	#pragma endregion
+}
+
+void GameScene::EnemyGeneration() {
+	///
+	/// 乱数生成器を初期化
+	/// 
+	
+	std::random_device rd;
+	std::mt19937 rng(rd());
+
+	///
+	///	生成時の各座標について
+	/// 
+	
+	// X座標。指定範囲の間をランダムで生成
+	const float kGenerateX = 12.0f;
+	std::uniform_real_distribution<float> distX(-kGenerateX, kGenerateX);
+	// 指定範囲のランダムなX座標を生成
+	float randomX = distX(rng);
+
+	// Y座標。固定（全ての敵を同じY座標で生成する）
+	const float kGenerateY = 12.0f;
+
+	///
+	///	生成の頻度について
+	/// 
+
+	// 敵を生成するまでの最小フレーム数と最大フレーム数
+	const uint32_t minFrames = 120;
+	const uint32_t maxFrames = 120;
+	std::uniform_int_distribution<uint32_t> distFrame(minFrames, maxFrames);
+	nextGenerationFrame_ = distFrame(rng);
+
+	///
+	///	実際に敵の生成を行う
+	/// 
+	
+	if (gameTime_ % nextGenerationFrame_ == 0) {
+		Enemy* newEnemy = new Enemy();
+		newEnemy->Initialize(modelEnemy_, {randomX, kGenerateY, 0.0f});
+
+		enemies_.push_back(newEnemy);
+	}
 }

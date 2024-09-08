@@ -56,6 +56,11 @@ public: // メンバ関数
 	/// </summary>
 	void CheckAllCollision();
 
+	/// <summary>
+	/// 敵の自動生成
+	/// </summary>
+	void EnemyGeneration();
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -79,7 +84,7 @@ private: // メンバ変数
 	Model* modelPlayer_ = nullptr;
 
 	///
-	///	敵
+	///	敵関連
 	/// 
 
 	// 敵のリスト
@@ -89,24 +94,18 @@ private: // メンバ変数
 	Model* modelEnemy_ = nullptr;
 
 	///
-	///	レーザー
+	///	レーザー関連
 	/// 
 
+	// モデル
 	Model* modelLaser_ = nullptr;
 
 	///
 	///	その他
 	/// 
 	
-	// 各方向を定義（敵の移動に使用）
-	const Vector3 kRightDirection = {1.0f, 0.0f, 0.0f}; // 右移動（上のラインにいる場合）
-	const Vector3 kDownDirection = {0.0f, -1.0f, 0.0f}; // 下移動（右のラインにいる場合）
-	const Vector3 kLeftDirection = {-1.0f, 0.0f, 0.0f}; // 左移動（下のラインにいる場合）
-	const Vector3 kUpDirection = {0.0f, 1.0f, 0.0f}; // 上移動（左のラインにいる場合）
-
-	// 外側の枠の各頂点の座標を定義（敵のスポーン位置や、敵の移動方向を変えるトリガーに使用）
-	const Vector3 kOutsideFrameTopLeftPos = {-16.0f, 16.0f, 0.0f}; // 外枠の左上座標
-	const Vector3 kOutsideFrameTopRightPos = {16.0f, 16.0f, 0.0f}; // 外枠の右上座標
-	const Vector3 kOutsideFrameBottomRightPos = {16.0f, -16.0f, 0.0f}; // 外枠の右下座標
-	const Vector3 kOutsideFrameBottomLeftPos = {-16.0f, -16.0f, 0.0f}; // 外枠の左下座標
+	// ゲームシーン経過時間をカウント
+	uint32_t gameTime_;
+	// 敵の生成頻度(フレーム)
+	uint32_t nextGenerationFrame_;
 };
