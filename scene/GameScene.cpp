@@ -104,7 +104,7 @@ void GameScene::Update() {
 	});
 
 	// 敵の自動生成を行う
-	/*EnemyGeneration();*/
+	EnemyGeneration();
 
 	///
 	///	全ての衝突判定を行う
@@ -187,7 +187,7 @@ void GameScene::Debug() {
 	// 敵を出現させる
 	if (ImGui::Button("EnemySpawn")) {
 		Enemy* newEnemy = new Enemy();
-		newEnemy->Initialize(modelEnemy_, {4.0f, 12.0f, 0.0f});
+		newEnemy->Initialize(modelEnemy_, modelLaser_, {4.0f, 12.0f, 0.0f});
 
 		enemies_.push_back(newEnemy);
 	}
@@ -199,14 +199,15 @@ void GameScene::Debug() {
 }
 
 void GameScene::CheckAllCollision() {
-	#pragma region プレイヤーのレーザー->敵
+	#pragma region プレイヤーのレーザー->敵（OBB->Sphere）
 
-	// プレイヤーのレーザーが敵のサイズを増加させる量
+	// プレイヤーのレーザーが敵のサイズを増加させる量（要調整。今は定数にしてるけどあとでいじれるようにしたい）
 	const float kIncrementSize = 0.01f;
 
 	// プレイヤーのレーザーが有効である場合
 	if (player_->GetLaser().IsActive()) {
 		Laser& laser = player_->GetLaser();
+		// レーザーをOBBとして扱う
 		OBBCollider laserOBB = laser.GetOBB();
 
 		// 全ての敵に対して衝突判定
@@ -223,6 +224,87 @@ void GameScene::CheckAllCollision() {
 					enemy->OnCollision(kIncrementSize);
 				}
 			}
+		}
+	}
+
+	#pragma endregion
+
+	#pragma region 敵のレーザー->敵（OBB->Sphere）
+
+	// 敵のレーザーが敵のサイズを増加させる量（要調整。今は定数にしてるけどあとでいじれるようにしたい）
+	const float kEnemyIncrementSize = 0.008f;
+
+	// 各敵のレーザーについて処理を行う
+	for (Enemy* shooterEnemy : enemies_) {
+		if (shooterEnemy->GetLaser().IsActive()) {
+			Laser& laser = shooterEnemy->GetLaser();
+			// レーザーをOBBとして扱う
+			OBBCollider laserOBB = laser.GetOBB();
+
+			// 自分自身のレーザーとの衝突は無視
+			for (Enemy* targetEnemy : enemies_) {
+				if (shooterEnemy != targetEnemy) {
+					// 敵を球体として扱う
+					SphereCollider enemyColider;
+					enemyColider.center = targetEnemy->GetWorldPosition();
+					enemyColider.radius = targetEnemy->GetRadius();
+
+					// 衝突判定を行う
+					if (laserOBB.IsCollision(enemyColider)) {
+						// 衝突した敵のサイズを増加させる（地面にいる敵には当たらないようにする）
+						if (!targetEnemy->HasReachedBottom()) {
+							targetEnemy->OnCollision(kEnemyIncrementSize);
+						}
+					}
+				}
+			}
+		}
+	}
+
+	#pragma endregion
+
+	#pragma region 敵のレーザー->プレイヤー（OBB->Sphere）
+
+	// 各敵のレーザーについて処理を行う
+	for (Enemy* shooterEnemy : enemies_) {
+		if (shooterEnemy->GetLaser().IsActive()) {
+			Laser& laser = shooterEnemy->GetLaser();
+			// レーザーをOBBとして扱う
+			OBBCollider laserOBB = laser.GetOBB();
+			
+			// プレイヤーを球体として扱う
+			SphereCollider playerCollider;
+			playerCollider.center = player_->GetWorldPosition();
+			playerCollider.radius = player_->GetRadius();
+
+			// 衝突判定を行う
+			if (laserOBB.IsCollision(playerCollider)) {
+				// プレイヤーの衝突時コールバックを呼び出す
+				player_->OnCollision();
+			}
+		}
+	}
+
+	#pragma endregion
+
+	#pragma region 敵本体->プレイヤー（Sphere->Sphere）
+
+	// プレイヤーのコライダーを設定
+	SphereCollider playerCollider;
+	playerCollider.center = player_->GetWorldPosition();
+	playerCollider.radius = player_->GetRadius();
+
+	// 全ての敵に対して衝突判定
+	for (Enemy* enemy : enemies_) {
+		// 敵のコライダーを設定
+		SphereCollider enemyCollider;
+		enemyCollider.center = enemy->GetWorldPosition();
+		enemyCollider.radius = enemy->GetRadius();
+
+		// 衝突判定を行う
+		if (playerCollider.IsCollision(enemyCollider)) {
+			// プレイヤーの衝突時コールバックを呼び出す
+			player_->OnCollision();
 		}
 	}
 
@@ -248,7 +330,7 @@ void GameScene::EnemyGeneration() {
 	float randomX = distX(rng);
 
 	// Y座標。固定（全ての敵を同じY座標で生成する）
-	const float kGenerateY = 12.0f;
+	const float kGenerateY = 24.0f;
 
 	///
 	///	生成の頻度について
@@ -266,7 +348,7 @@ void GameScene::EnemyGeneration() {
 	
 	if (gameTime_ % nextGenerationFrame_ == 0) {
 		Enemy* newEnemy = new Enemy();
-		newEnemy->Initialize(modelEnemy_, {randomX, kGenerateY, 0.0f});
+		newEnemy->Initialize(modelEnemy_, modelLaser_, {randomX, kGenerateY, 0.0f});
 
 		enemies_.push_back(newEnemy);
 	}

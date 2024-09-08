@@ -29,6 +29,10 @@ public:
 	void Move();
 	// RBでレーザーを発射
 	void Attack();
+	// 無敵状態中の処理（ダメージを受けた際）
+	void Invincible();
+	// 衝突時コールバック（HPを減らして無敵にする）
+	void OnCollision();
 
 	// 描画
 	void Draw(ViewProjection& viewProjection);
@@ -66,8 +70,15 @@ private:
 	float characterSpeed_;
 	// 半径
 	const float kRadius_ = 1.0f;
+
 	// 体力
 	uint32_t hp_;
+	// 無敵状態かどうか
+	bool isInvincible_ = true;
+	// 無敵時間（フレーム）: 要調整
+	const int32_t kInvincibleTime_ = 120;
+	// 無敵時間カウント
+	int32_t invincibleCount_;
 
 	///
 	///	レーザー関連の情報

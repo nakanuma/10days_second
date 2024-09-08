@@ -37,7 +37,11 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 	characterSpeed_ = 0.3f;
 	// 体力の初期値を設定
 	hp_ = 3;
-	// レーザー射撃中/非射撃中の自動上昇・下降の速度の初期値を設定
+
+	// 無敵時間カウントを初期化
+	invincibleCount_ = 0;
+
+	// レーザー射撃中/非射撃中の自動上昇・下降の速度の初期値を設定（ImGuiでいじれるように）
 	autoAscendingSpeed_ = 0.1f;
 	autoDescendingSpeed_ = 0.15f;
 
@@ -63,6 +67,12 @@ void Player::Update() {
 
 	// RBでレーザーを発射
 	Attack();
+
+	///
+	///	無敵時間中（ダメージを受けた後）に行う処理
+	/// 
+
+	Invincible();
 
 	///
 	///	行列の更新
@@ -186,12 +196,43 @@ void Player::Attack() {
 	}
 }
 
+void Player::Invincible() {
+	// 無敵の場合、無敵カウントを減らしていく
+	if (isInvincible_) {
+		invincibleCount_--;
+	}
+
+	// 無敵カウントが0になったら無敵時間を解除
+	if (invincibleCount_ <= 0) {
+		isInvincible_ = false;
+	}
+}
+
+void Player::OnCollision() {
+	// 現在が無敵じゃない場合のみ処理を行う
+	if (!isInvincible_) {
+		hp_--;
+		// 無敵状態にする
+		isInvincible_ = true;
+		// 無敵カウントに無敵時間をセット
+		invincibleCount_ = kInvincibleTime_;
+	}
+}
+
 void Player::Draw(ViewProjection& viewProjection) {
 	///
 	///	プレイヤー本体描画
 	/// 
 	
-	modelPlayer_->Draw(worldTransform_, viewProjection);
+	// 無敵じゃない場合は普通に描画
+	if (!isInvincible_) {
+		modelPlayer_->Draw(worldTransform_, viewProjection);
+	// 無敵状態のときは点滅させる
+	} else {
+		if (invincibleCount_ % 5 == 0) {
+			modelPlayer_->Draw(worldTransform_, viewProjection);
+		}
+	}
 
 	///
 	///	レーザーの描画

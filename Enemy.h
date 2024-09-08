@@ -4,16 +4,25 @@
 #include "Model.h"
 
 // MyClass
-
+#include "Laser.h"
 
 class Enemy {
 public:
 	~Enemy();
 
-	// 初期化
-	void Initialize(Model* modelEnemy, Vector3 position);
+	/// <summary>
+	/// 初期化
+	/// </summary>
+	/// <param name="modelEnemy">敵のモデル</param>
+	/// <param name="modelLaser">レーザーのモデル</param>
+	/// <param name="position">初期スポーン位置</param>
+	void Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position);
+
 	// 更新
 	void Update();
+	// 攻撃（一番したまで到達したら上にレーザー発射）
+	void Attack();
+
 	// 描画
 	void Draw(ViewProjection& viewProjection);
 
@@ -40,8 +49,14 @@ public:
 	bool IsDead() { return isDead_; }
 	// 一番下まで到達したかを取得
 	bool HasReachedBottom() { return hasReachedBottom_; }
+	// レーザーの取得
+	Laser& GetLaser() { return laser_; }
 
 private:
+	///
+	///	基本的な情報
+	/// 
+
 	// ワールドトランスフォーム
 	WorldTransform worldTransform_;
 	// モデル
@@ -54,4 +69,14 @@ private:
 	float fallSpeed_;
 	// 一番下まで到達したか
 	bool hasReachedBottom_ = false;
+
+	///
+	///	レーザー
+	/// 
+	
+	// レーザー本体
+	Laser laser_;
+	// モデル
+	Model* modelLaser_ = nullptr;
+
 };

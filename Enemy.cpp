@@ -7,14 +7,18 @@
 
 Enemy::~Enemy() {}
 
-void Enemy::Initialize(Model* modelEnemy, Vector3 position) { 
+void Enemy::Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position) { 
 	// メンバ変数にモデルを設定
 	assert(modelEnemy);
 	modelEnemy_ = modelEnemy;
 
+	assert(modelLaser);
+	modelLaser_ = modelLaser;
+
 	// ワールドトランスフォームの初期化
 	worldTransform_.Initialize();
 	worldTransform_.translation_ = position;
+	worldTransform_.rotation_ = {0.0f, 0.0f, 1.57f}; // 最初は右を向いていることになっているので、上向きに設定
 
 	// 半径の初期値を設定
 	radius_ = 1.0f;
@@ -35,9 +39,12 @@ void Enemy::Update() {
 	///	スケールと半径を同期させる（レーザーが当たると大きくなるにあたって、見た目と当たり判定を合わせる）
 	/// 
 
-	worldTransform_.scale_.x = radius_;
-	worldTransform_.scale_.y = radius_;
-	worldTransform_.scale_.z = radius_;
+	// 地面に到達していない間のみ（一番下でレーザーを撃っている際にScaleを縮小させるため、不都合が起きないように）
+	if (!hasReachedBottom_) {
+		worldTransform_.scale_.x = radius_;
+		worldTransform_.scale_.y = radius_;
+		worldTransform_.scale_.z = radius_;
+	}
 
 	///
 	///	Y座標が一定の場所まで降りたら停止
@@ -48,6 +55,27 @@ void Enemy::Update() {
 	// 一番したまで到達したことを示す
 	if (worldTransform_.translation_.y <= kStopYposition) {
 		hasReachedBottom_ = true;
+	}
+
+	///
+	///	一番下まで到達したらレーザーを発射
+	/// 
+
+	Attack();
+
+	///
+	///	レーザーが有効な間はscale.xを縮小させる
+	/// 
+
+	// 毎フレーム縮小させるサイズ
+	const float kDecrementSize = 0.01f;
+
+	if (laser_.IsActive()) {
+		worldTransform_.scale_.x -= kDecrementSize;
+	}
+	// スケールの縮小によって消えたら死亡させる
+	if (worldTransform_.scale_.x <= 0.0f) {
+		isDead_ = true;
 	}
 
 	///
@@ -62,9 +90,40 @@ void Enemy::Update() {
 	Debug();
 }
 
+void Enemy::Attack() {
+	// 一番下に到達した際にレーザーを発射する
+	if (hasReachedBottom_) {
+		// レーザーの初期化
+		laser_.Initialize(
+			modelLaser_, 
+			worldTransform_.translation_, 
+			worldTransform_.rotation_, 
+			Vector3{Laser::kLength, worldTransform_.scale_.y, 0.01f}
+		);
+	}
+
+	// 有効な場合、レーザーを更新
+	if (laser_.IsActive()) {
+		laser_.Update(worldTransform_.translation_, worldTransform_.rotation_);
+	}
+
+}
+
 void Enemy::Draw(ViewProjection& viewProjection) {
-	// モデルの描画
+	///
+	///	敵本体の描画
+	///
+	
 	modelEnemy_->Draw(worldTransform_, viewProjection);
+
+	///
+	///	レーザーの描画
+	/// 
+	
+	// 有効な場合のみ
+	if (laser_.IsActive()) {
+		laser_.Draw(viewProjection);
+	}
 }
 
 void Enemy::OnCollision(float incrementSize) {
@@ -91,6 +150,7 @@ void Enemy::Debug(){
 
 	ImGui::Text("radius : %.2f", radius_);
 	ImGui::Text("reachedBottom : %d", hasReachedBottom_);
+	ImGui::Text("LaserIsActive : %d", laser_.IsActive());
 
 	ImGui::End();
 }
