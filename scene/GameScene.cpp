@@ -30,6 +30,12 @@ GameScene::~GameScene() {
 	for (Enemy* enemy : enemies_) {
 		delete enemy;
 	}
+	// 敵出現マークのモデル
+	delete modelEnemyAppearMark_;
+	// 敵出現マーク全てを開放
+	for (EnemyAppearMark* mark : enemyAppearMarks_) {
+		delete mark;
+	}
 
 	///
 	///	レーザー
@@ -74,6 +80,8 @@ void GameScene::Initialize() {
 	
 	// 敵モデル生成
 	modelEnemy_ = Model::CreateFromOBJ("enemy", true);
+	// 敵出現マークのモデル生成
+	modelEnemyAppearMark_ = Model::CreateFromOBJ("enemyAppearMark", true);
 
 	///
 	///	その他
@@ -91,9 +99,10 @@ void GameScene::Update() {
 	player_->Update();
 
 	///
-	///	敵全ての更新
+	///	敵関連の更新
 	/// 
 
+	// 敵全て
 	for (Enemy* enemy : enemies_) {
 		enemy->Update();
 
@@ -107,6 +116,19 @@ void GameScene::Update() {
 	enemies_.remove_if([](Enemy* enemy) {
 		if (enemy->IsDead()) {
 			delete enemy;
+			return true;
+		}
+		return false;
+	});
+
+	// 敵出現マーク全て
+	for (EnemyAppearMark* mark : enemyAppearMarks_) {
+		mark->Update();
+	}
+	// 死んだマークをリストから削除
+	enemyAppearMarks_.remove_if([](EnemyAppearMark* mark) {
+		if (mark->IsDead()) {
+			delete mark;
 			return true;
 		}
 		return false;
@@ -165,11 +187,16 @@ void GameScene::Draw() {
 	player_->Draw(viewProjection_);
 
 	///
-	///	敵全ての描画
+	///	敵関連の描画
 	/// 
-
+	
+	// 敵全て
 	for (Enemy* enemy : enemies_) {
 		enemy->Draw(viewProjection_);
+	}
+	// 敵の出現マーク全て
+	for (EnemyAppearMark* mark : enemyAppearMarks_) {
+		mark->Draw(viewProjection_);
 	}
 
 	// 3Dオブジェクト描画後処理
@@ -339,7 +366,7 @@ void GameScene::EnemyGeneration() {
 	float randomX = distX(rng);
 
 	// Y座標。固定（全ての敵を同じY座標で生成する）
-	const float kGenerateY = 24.0f;
+	const float kGenerateY = 28.0f;
 
 	///
 	///	生成時の半径について
@@ -372,13 +399,25 @@ void GameScene::EnemyGeneration() {
 	nextGenerationFrame_ = distFrame(rng);
 
 	///
-	///	実際に敵の生成を行う
+	///	実際に敵の生成を行う & 敵出現マークの生成も行う
 	/// 
 	
+	// 敵出現マークのY座標（一律で固定）
+	const float kEnemyAppearMarkY = 14.0f;
+
 	if (gameTime_ % nextGenerationFrame_ == 0) {
 		Enemy* newEnemy = new Enemy();
 		newEnemy->Initialize(modelEnemy_, modelLaser_, {randomX, kGenerateY, 0.0f}, randomRadius);
 
 		enemies_.push_back(newEnemy);
+
+		///
+		///	敵出現マークの生成
+		///		
+		
+		EnemyAppearMark* newMark = new EnemyAppearMark();
+		newMark->Initialize(modelEnemyAppearMark_, {randomX, kEnemyAppearMarkY, 0.0f}); // 敵と同じX座標を指定
+
+		enemyAppearMarks_.push_back(newMark);
 	}
 }

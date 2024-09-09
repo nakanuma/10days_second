@@ -22,8 +22,8 @@ void Enemy::Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position, f
 
 	// 半径の初期値を設定
 	radius_ = radius;
-	// 自動で下降する速度を設定
-	fallSpeed_ = 0.1f;
+	// 自動で下降する速度を設定（低いほどゆっくり降りてくる）
+	fallSpeed_ = 0.05f;
 
 	// ワールドトランスフォームを更新しておく
 	worldTransform_.UpdateMatrix();

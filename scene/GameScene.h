@@ -15,6 +15,7 @@
 // MyClass
 #include "Player.h"
 #include "Enemy.h"
+#include "EnemyAppearMark.h"
 
 /// <summary>
 /// ゲームシーン
@@ -58,7 +59,7 @@ public: // メンバ関数
 	void CheckAllCollision();
 
 	/// <summary>
-	/// 敵の自動生成
+	/// 敵の自動生成 && 敵出現マークの生成
 	/// </summary>
 	void EnemyGeneration();
 
@@ -90,9 +91,13 @@ private: // メンバ変数
 
 	// 敵のリスト
 	std::list<Enemy*> enemies_;
+	// 敵出現マークのリスト
+	std::list<EnemyAppearMark*> enemyAppearMarks_;
 	
 	// 敵のモデル
 	Model* modelEnemy_ = nullptr;
+	// 敵出現マークのモデル
+	Model* modelEnemyAppearMark_ = nullptr;
 
 	///
 	///	レーザー関連
