@@ -5,6 +5,9 @@
 
 #include "imgui.h"
 
+// MyClass
+#include "Easing.h"
+
 Player::~Player() {
 	///
 	///	各種開放
@@ -37,9 +40,14 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 	characterSpeed_ = 0.3f;
 	// 体力の初期値を設定
 	hp_ = 3;
+	// スコアの初期化
+	score_ = 0;
 
 	// 無敵時間カウントを初期化
 	invincibleCount_ = 0;
+
+	// レーザーを撃つ際のボタンが押されたかの初期化（RBが押された瞬間のみプレイヤーを跳ねさせる処理に使用）
+	wasLaserButtonPressed_ = false;
 
 	// レーザー射撃中/非射撃中の自動上昇・下降の速度の初期値を設定（ImGuiでいじれるように）
 	autoAscendingSpeed_ = 0.1f;
@@ -176,8 +184,15 @@ void Player::Attack() {
 	XINPUT_STATE joyState;
 	Input::GetInstance()->GetJoystickState(0, joyState);
 
+	///
+	///	RBでレーザー発射
+	///	
+
+	// RBボタンの現在の押下状態を記録
+	bool isLaserButtonPressed = (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER);
+
 	// RBを押した場合
-	if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER) {
+	if (isLaserButtonPressed) {
 		// レーザーの初期化
 		laser_.Initialize(
 			modelLaser_, 
@@ -185,6 +200,14 @@ void Player::Attack() {
 			worldTransform_.rotation_, 
 			Vector3{Laser::kLength, worldTransform_.scale_.y, 0.01f}
 		);
+
+		///
+		/// RBが押された瞬間（前フレームで押されていなかった場合）のみ、プレイヤーを上に跳ねさせる
+		/// 
+		if (!wasLaserButtonPressed_) {
+			worldTransform_.translation_.y += 1.5f;
+		}
+
 	// 押していない場合はレーザーを無効化
 	} else {
 		laser_.SetActive(false);
@@ -194,6 +217,9 @@ void Player::Attack() {
 	if (laser_.IsActive()) {
 		laser_.Update(worldTransform_.translation_, worldTransform_.rotation_);
 	}
+
+	// 現在のRBボタン状態を次フレームに向けて記録
+	wasLaserButtonPressed_ = isLaserButtonPressed;
 }
 
 void Player::Invincible() {
@@ -255,6 +281,7 @@ void Player::Debug() {
 	ImGui::Text("Parameter");
 	ImGui::DragFloat("PlayerSpeed", &characterSpeed_, 0.01f);
 	ImGui::Text("HP : %d", hp_);
+	ImGui::Text("Score : %d", score_);
 	ImGui::DragFloat("AscendingSpeed", &autoAscendingSpeed_, 0.01f);
 	ImGui::DragFloat("DescendingSpeed", &autoDescendingSpeed_, 0.01f);
 

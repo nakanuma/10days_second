@@ -27,7 +27,7 @@ public:
 	void Update();
 	// 左スティックで左右移動・右スティックで角度変更・レーザー射撃状態によって自動で上昇下降・プレイヤーが範囲外へ行かないようにする処理
 	void Move();
-	// RBでレーザーを発射
+	// RBでレーザーを発射・RBを押した瞬間に少し上に跳ねる処理
 	void Attack();
 	// 無敵状態中の処理（ダメージを受けた際）
 	void Invincible();
@@ -39,6 +39,9 @@ public:
 
 	// デバッグ表示
 	void Debug();
+
+	// 指定した値、スコアを加算
+	void AddScore(uint32_t amount) { score_ += amount; }
 
 	///
 	///	アクセッサ
@@ -73,12 +76,19 @@ private:
 
 	// 体力
 	uint32_t hp_;
+	// 現在スコア
+	uint32_t score_;
 	// 無敵状態かどうか
 	bool isInvincible_ = true;
 	// 無敵時間（フレーム）: 要調整
 	const int32_t kInvincibleTime_ = 120;
 	// 無敵時間カウント
 	int32_t invincibleCount_;
+
+	/*RBを押した瞬間のみ、プレイヤーを上に跳ねさせる処理に使用*/
+
+	// レーザーを撃つ際のボタンが押されたかを記録
+	bool wasLaserButtonPressed_;
 
 	///
 	///	レーザー関連の情報
@@ -90,7 +100,7 @@ private:
 	Model* modelLaser_ = nullptr;
 
 	///
-	///	その他パラメーターなど
+	///	その他パラメーターなど（ImGuiでの調整項目）
 	/// 
 	
 	// レーザー射撃中/非射撃中の自動上昇・下降の速度

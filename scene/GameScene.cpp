@@ -96,6 +96,12 @@ void GameScene::Update() {
 
 	for (Enemy* enemy : enemies_) {
 		enemy->Update();
+
+		// 空中にいる敵が死んだ際、プレイヤーにスコアを100与える
+		if (enemy->IsDead() && !enemy->HasReachedBottom()) {
+			player_->AddScore(100);
+		}
+
 	}
 	// 死んだ敵をリストから削除
 	enemies_.remove_if([](Enemy* enemy) {

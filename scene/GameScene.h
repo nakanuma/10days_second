@@ -8,6 +8,7 @@
 #include "ViewProjection.h"
 #include "WorldTransform.h"
 #include "PrimitiveDrawer.h"
+#include "WinApp.h"
 
 #include <list>
 
