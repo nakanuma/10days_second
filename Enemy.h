@@ -24,8 +24,10 @@ public:
 	// 攻撃（一番したまで到達したら上にレーザー発射）
 	void Attack();
 
-	// 描画
+	// 本体の描画
 	void Draw(ViewProjection& viewProjection);
+	//　レーザーの描画
+	void DrawLaser(ViewProjection& viewProjection);
 
 	/// <summary>
 	/// 衝突時コールバック（サイズを大きくする : プレイヤーのレーザーと敵のレーザーで増加量を変更）

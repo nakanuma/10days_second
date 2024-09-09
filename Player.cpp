@@ -198,7 +198,7 @@ void Player::Attack() {
 			modelLaser_, 
 			worldTransform_.translation_, 
 			worldTransform_.rotation_, 
-			Vector3{Laser::kLength, worldTransform_.scale_.y, 0.01f}
+			Vector3{Laser::kLength, worldTransform_.scale_.y, worldTransform_.scale_.z}
 		);
 
 		///

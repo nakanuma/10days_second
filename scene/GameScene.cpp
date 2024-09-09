@@ -192,6 +192,9 @@ void GameScene::Draw() {
 	
 	// 敵全て
 	for (Enemy* enemy : enemies_) {
+		// レーザーの描画
+		enemy->DrawLaser(viewProjection_);
+		// 本体の描画
 		enemy->Draw(viewProjection_);
 	}
 	// 敵の出現マーク全て

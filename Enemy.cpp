@@ -120,11 +120,13 @@ void Enemy::Draw(ViewProjection& viewProjection) {
 	///
 	
 	modelEnemy_->Draw(worldTransform_, viewProjection);
+}
 
+void Enemy::DrawLaser(ViewProjection& viewProjection) {
 	///
 	///	レーザーの描画
-	/// 
-	
+	///
+
 	// 有効な場合のみ
 	if (laser_.IsActive()) {
 		laser_.Draw(viewProjection);
