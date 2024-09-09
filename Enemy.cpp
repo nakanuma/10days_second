@@ -1,9 +1,10 @@
 #include "Enemy.h"
-
 #include "imgui.h"
-
 #include <cassert>
 #include <algorithm>
+
+// MyClass
+#include "Easing.h"
 
 Enemy::~Enemy() {}
 
@@ -25,8 +26,21 @@ void Enemy::Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position, f
 	// 自動で下降する速度を設定（低いほどゆっくり降りてくる）
 	fallSpeed_ = 0.05f;
 
+	///
+	///	予備動作用レーザーの設定
+	/// 
+
+	// 予備動作用ワールドトランスフォームの初期化
+	anticWorldTransform_.Initialize();
+
+	Vector3 offset = {0.0f, Laser::kLength, 0.0f};
+	anticWorldTransform_.translation_ = worldTransform_.translation_ + offset;
+	anticWorldTransform_.rotation_ = {0.0f, 0.0f, 1.57f}; // 最初は右を向いていることになっているので、上向きに設定
+	anticWorldTransform_.scale_ = {Laser::kLength, 0.1f, 0.01f};
+
 	// ワールドトランスフォームを更新しておく
 	worldTransform_.UpdateMatrix();
+	anticWorldTransform_.UpdateMatrix();
 }
 
 void Enemy::Update() {
@@ -63,13 +77,21 @@ void Enemy::Update() {
 	}
 
 	///
-	///	一番下まで到達したらレーザーを発射
+	///	一番下まで到達したら予備動作の開始
 	/// 
 
-	Attack();
+	if (hasReachedBottom_) {
+		if (!endAntic_) {
+			// 予備動作を実行
+			StartAntic();
+		} else {
+			// 予備動作が終了したら攻撃開始
+			Attack();
+		}
+	}
 
 	///
-	///	レーザーが有効な間はscale.xを縮小させる
+	///	レーザーが有効な間は敵本体のscale.xを縮小させる
 	/// 
 
 	// 毎フレーム縮小させるサイズ
@@ -84,15 +106,60 @@ void Enemy::Update() {
 	}
 
 	///
+	///	予備動作レーザーの更新
+	/// 
+
+	Vector3 offset = {0.0f, Laser::kLength, 0.0f};
+	anticWorldTransform_.translation_ = worldTransform_.translation_ + offset;
+
+	///
 	///	行列の更新
 	/// 
 	worldTransform_.UpdateMatrix();
+	anticWorldTransform_.UpdateMatrix();
 
 	///
 	///	デバッグ表示
 	/// 
 	
 	Debug();
+}
+
+void Enemy::StartAntic() { 
+	//// 予備動作レーザーの拡大速度
+	//const float kAnticScaleSpeed = 0.03f;
+
+	//// 予備動作用のYスケールを現在の半径まで拡大
+	//if (anticWorldTransform_.scale_.y < radius_) {
+	//	// 地面に着いてから60フレーム経過したら予備動作レーザーを拡大し始める
+	//	if (anticTimer_++ >= 60) {
+	//		anticWorldTransform_.scale_.y += kAnticScaleSpeed;
+	//	}
+	//	anticWorldTransform_.scale_.y = (std::min)(anticWorldTransform_.scale_.y, radius_);
+	//}
+
+	//// 予備動作が終了したかを確認
+	//if (anticWorldTransform_.scale_.y >= radius_) {
+	//	endAntic_ = true; // 予備動作終了
+	//}
+
+	// 予備動作レーザーの拡大にかける時間
+	const float kAnticDuration = 60.0f; // フレーム数を設定
+
+	// 進行度を0.0 ~ 1.0fの範囲で計算
+	if (anticTimer_++ >= 30) { // 地面に到達して30フレームしたら開始
+		float progress = (anticTimer_ - 30) / kAnticDuration; // 30フレーム後からスタート
+		progress = (std::min)(progress, 1.0f); // 進行度が1.0を超えないように
+
+		// EaseInQuad関数で拡大率を計算
+		float scale = Easing::EaseInQuart(progress) * (radius_ - 0.1f) + 0.1f; // 初期スケールYが0.1であるため、0.1から始まるよう調整
+		anticWorldTransform_.scale_.y = scale;
+	}
+
+	// 予備動作が終了したかを確認
+	if (anticWorldTransform_.scale_.y >= radius_) {
+		endAntic_ = true; // 予備動作終了
+	}
 }
 
 void Enemy::Attack() {
@@ -111,7 +178,6 @@ void Enemy::Attack() {
 	if (laser_.IsActive()) {
 		laser_.Update(worldTransform_.translation_, worldTransform_.rotation_);
 	}
-
 }
 
 void Enemy::Draw(ViewProjection& viewProjection) {
@@ -120,6 +186,15 @@ void Enemy::Draw(ViewProjection& viewProjection) {
 	///
 	
 	modelEnemy_->Draw(worldTransform_, viewProjection);
+
+	///
+	///	予備動作レーザーの描画
+	/// 
+	
+	// 地面に着いたかつ、まだ予備動作が終わっていない場合のみ
+	if (hasReachedBottom_ /*&& !endAntic_*/) { // 1フレームだけレーザーが無い状態ができてしまうので、両方のレーザーを重ねて描画
+		modelLaser_->Draw(anticWorldTransform_, viewProjection);
+	}
 }
 
 void Enemy::DrawLaser(ViewProjection& viewProjection) {

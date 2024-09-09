@@ -21,7 +21,9 @@ public:
 
 	// 更新
 	void Update();
-	// 攻撃（一番したまで到達したら上にレーザー発射）
+	// 攻撃の予備動作（一番下まで到達したら細いレーザーを出し、現在の半径になるまでscale.yを増加させる）
+	void StartAntic();
+	// 攻撃（予備動作が終了したらレーザー発射）
 	void Attack();
 
 	// 本体の描画
@@ -82,4 +84,12 @@ private:
 	// モデル
 	Model* modelLaser_ = nullptr;
 
+	/*予備動作に使用*/
+
+	// 予備動作用ワールドトランスフォーム
+	WorldTransform anticWorldTransform_;
+	// 予備動作が終了したか
+	bool endAntic_ = false;
+	// 予備動作タイマー（予備動作レーザーの拡大が開始する時間を決める）
+	uint32_t anticTimer_ = 0;
 };

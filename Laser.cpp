@@ -49,7 +49,7 @@ void Laser::UpdateCollision() {
 }
 
 void Laser::Draw(ViewProjection& viewProjection) {
-	model_->SetAlpha(0.5f);
+	/*model_->SetAlpha(0.5f);*/
 	// モデルの描画
 	model_->Draw(worldTransform_, viewProjection);
 }

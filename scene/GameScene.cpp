@@ -396,8 +396,8 @@ void GameScene::EnemyGeneration() {
 	/// 
 
 	// 敵を生成するまでの最小フレーム数と最大フレーム数
-	const uint32_t minFrames = 120;
-	const uint32_t maxFrames = 120;
+	const uint32_t minFrames = 180;
+	const uint32_t maxFrames = 180;
 	std::uniform_int_distribution<uint32_t> distFrame(minFrames, maxFrames);
 	nextGenerationFrame_ = distFrame(rng);
 
