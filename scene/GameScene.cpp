@@ -193,13 +193,13 @@ void GameScene::Draw() {
 void GameScene::Debug() { 
 	ImGui::Begin("GameScene"); 
 
-	// 敵を出現させる
-	if (ImGui::Button("EnemySpawn")) {
-		Enemy* newEnemy = new Enemy();
-		newEnemy->Initialize(modelEnemy_, modelLaser_, {4.0f, 12.0f, 0.0f});
+	//// 敵を出現させる
+	//if (ImGui::Button("EnemySpawn")) {
+	//	Enemy* newEnemy = new Enemy();
+	//	newEnemy->Initialize(modelEnemy_, modelLaser_, {4.0f, 12.0f, 0.0f});
 
-		enemies_.push_back(newEnemy);
-	}
+	//	enemies_.push_back(newEnemy);
+	//}
 
 	// ゲームシーン経過時間を表示
 	ImGui::Text("GameTime : %d", gameTime_);
@@ -342,6 +342,26 @@ void GameScene::EnemyGeneration() {
 	const float kGenerateY = 24.0f;
 
 	///
+	///	生成時の半径について
+	/// 
+
+	// 敵の半径を決定するための確率
+	std::uniform_real_distribution<float> distProbability(0.0f, 1.0f);
+	float randomProbability = distProbability(rng); // 0.0f ~ 1.0fの間で生成される
+
+	float randomRadius;
+
+	// 20％の確率で大きい敵（半径2.0f ~ 2.5f）が生成
+	if (randomProbability < 0.2f) {
+		std::uniform_real_distribution<float> distRadiusLarge(2.0f, 2.5f);
+		randomRadius = distRadiusLarge(rng);
+	// 80％の確率で小さい敵（半径1.0f ~ 1.5f）が生成
+	} else {
+		std::uniform_real_distribution<float> distRadiusSmall(1.0f, 1.5f);
+		randomRadius = distRadiusSmall(rng);
+	}
+
+	///
 	///	生成の頻度について
 	/// 
 
@@ -357,7 +377,7 @@ void GameScene::EnemyGeneration() {
 	
 	if (gameTime_ % nextGenerationFrame_ == 0) {
 		Enemy* newEnemy = new Enemy();
-		newEnemy->Initialize(modelEnemy_, modelLaser_, {randomX, kGenerateY, 0.0f});
+		newEnemy->Initialize(modelEnemy_, modelLaser_, {randomX, kGenerateY, 0.0f}, randomRadius);
 
 		enemies_.push_back(newEnemy);
 	}

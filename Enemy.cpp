@@ -7,7 +7,7 @@
 
 Enemy::~Enemy() {}
 
-void Enemy::Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position) { 
+void Enemy::Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position, float radius) { 
 	// メンバ変数にモデルを設定
 	assert(modelEnemy);
 	modelEnemy_ = modelEnemy;
@@ -21,7 +21,7 @@ void Enemy::Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position) {
 	worldTransform_.rotation_ = {0.0f, 0.0f, 1.57f}; // 最初は右を向いていることになっているので、上向きに設定
 
 	// 半径の初期値を設定
-	radius_ = 1.0f;
+	radius_ = radius;
 	// 自動で下降する速度を設定
 	fallSpeed_ = 0.1f;
 
