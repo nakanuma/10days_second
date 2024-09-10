@@ -9,6 +9,16 @@ float Easing::EaseOutQuad(float t) {
 	return t * (2 - t); 
 }
 
+float Easing::EaseInQuad(float start, float end, float t) { 
+	float delta = end - start;
+	return delta * t * t + start;
+}
+
+float Easing::EaseOutQuad(float start, float end, float t) { 
+	float delta = end - start;
+	return -delta * t * (t - 2) + start;
+}
+
 float Easing::EaseInQuart(float t) { 
 	return t * t * t * t; }
 

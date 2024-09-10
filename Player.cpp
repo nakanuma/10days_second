@@ -179,6 +179,23 @@ void Player::Move() {
 	// 範囲を超えない処理
 	worldTransform_.translation_.x = std::clamp(worldTransform_.translation_.x, -kMoveLimitX, +kMoveLimitX);
 	worldTransform_.translation_.y = std::clamp(worldTransform_.translation_.y, -kMoveLimitY, +kMoveLimitY);
+
+	///
+	///	RBを押した瞬間の上昇処理
+	/// 
+	
+	if (isRising_) {
+		riseTime_ += 1.0f; // 経過時間を増加
+		float t = std::clamp(riseTime_ / riseDuration_, 0.0f, 1.0f); // 0.0f~1.0fの間にクランプ
+
+		// イージングを用いてY座標を更新
+		worldTransform_.translation_.y = Easing::EaseOutQuad(riseStartY_, riseEndY_, t);
+
+		// 上昇が完了したらフラグをリセット
+		if (t >= 1.0f) {
+			isRising_ = false;
+		}
+	}
 }
 
 void Player::Attack() {
@@ -206,8 +223,11 @@ void Player::Attack() {
 		///
 		/// RBが押された瞬間（前フレームで押されていなかった場合）のみ、プレイヤーを上に跳ねさせる
 		/// 
-		if (!wasLaserButtonPressed_) {
-			worldTransform_.translation_.y += 1.5f;
+		if (!wasLaserButtonPressed_ && !isRising_) {
+			isRising_ = true;
+			riseStartY_ = worldTransform_.translation_.y;
+			riseEndY_ = riseStartY_ + 3.5f; // 3.5上に上昇
+			riseTime_ = 0.0f; // 上昇の経過時間リセット
 		}
 
 	// 押していない場合はレーザーを無効化

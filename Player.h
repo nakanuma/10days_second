@@ -91,6 +91,16 @@ private:
 	bool wasLaserButtonPressed_;
 
 	///
+	///	RBを押した瞬間の上昇について
+	/// 
+
+	bool isRising_ = false;
+	float riseStartY_ = 0.0f;
+	float riseEndY_ = 0.0f;
+	float riseTime_ = 0.0f;
+	const float riseDuration_ = 15.0f; // 上昇にかけるフレーム数
+
+	///
 	///	レーザー関連の情報
 	/// 
 	
