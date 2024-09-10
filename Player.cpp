@@ -55,6 +55,9 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 	autoAscendingSpeed_ = 0.1f;
 	autoDescendingSpeed_ = 0.15f;
 
+	// 現在の下降速度
+	currentDescendingSpeed_ = 0.0f;
+
 	///
 	///	レーザー関連の初期化
 	/// 
@@ -164,8 +167,17 @@ void Player::Move() {
 	// レーザーが有効な場合、自動で上昇
 	if (laser_.IsActive()) {
 		worldTransform_.translation_.y += autoAscendingSpeed_;
+		currentDescendingSpeed_ = 0.0f; // 上昇中は下降速度をリセット
 	} else {
-		worldTransform_.translation_.y -= autoDescendingSpeed_;
+		// 下降速度を更新
+		if (currentDescendingSpeed_ < autoDescendingSpeed_) {
+			currentDescendingSpeed_ += kDescentAcceleration_;
+		}
+		// 速度がautoDescendingSpeedを超えないようにクランプ
+		currentDescendingSpeed_ = (std::min)(currentDescendingSpeed_, autoDescendingSpeed_);
+
+		// 現在の下降速度を使って位置を更新
+		worldTransform_.translation_.y -= currentDescendingSpeed_;
 	}
 
 	///

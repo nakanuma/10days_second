@@ -101,6 +101,13 @@ private:
 	const float riseDuration_ = 15.0f; // 上昇にかけるフレーム数
 
 	///
+	/// 下降時について
+	///
+
+	float currentDescendingSpeed_; // 現在の落下速度。autoDescendingSpeed_まで増加させる
+	const float kDescentAcceleration_ = 0.01f; // 現在の落下速度を、毎フレームこの値増加させる
+
+	///
 	///	レーザー関連の情報
 	/// 
 	
