@@ -321,7 +321,7 @@ void GameScene::Debug() {
 	//	newEnemy->Initialize(modelEnemy_, modelLaser_, {4.0f, 12.0f, 0.0f});
 
 	//	enemies_.push_back(newEnemy);
-	//}
+	//} 
 
 	// ゲームシーン経過時間を表示
 	ImGui::Text("GameTime : %d", gameTime_);
