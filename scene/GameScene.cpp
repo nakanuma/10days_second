@@ -59,6 +59,7 @@ GameScene::~GameScene() {
 	delete spriteScreenRight_;
 
 	delete spriteResultBackGround_;
+	delete spriteResultText_;
 }
 
 void GameScene::Initialize() {
@@ -129,6 +130,11 @@ void GameScene::Initialize() {
 	spriteResultBackGround_ = Sprite::Create(textureWhite1x1, {640.0f, 360.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
 	spriteResultBackGround_->SetAnchorPoint({0.5f, 0.5f}); // アンカーポイントを中心に設定
 	spriteResultBackGround_->SetSize({0.0f, 520.0f}); // 最初はXのサイズ0で生成。最大サイズは480
+
+	// 「リザルト」文字
+	uint32_t textureResultText = TextureManager::Load("images/resultText.png");
+	spriteResultText_ = Sprite::Create(textureResultText, {640.0f, 180.0f});
+	spriteResultText_->SetAnchorPoint({0.5f, 0.5f}); // アンカーポイントを中心に設定
 
 	///
 	///	その他
@@ -277,8 +283,16 @@ void GameScene::Draw() {
 	///	リザルト関連の描画
 	/// 
 
-	// リザルト表示時の最も後ろのスプライト描画
+	// リザルト表示時の最も後ろのスプライト描画（リザルト表示の最も奥に配置する必要）
 	spriteResultBackGround_->Draw();
+
+	// リザルトの最も後ろのスプライトが最大横幅になるまでのフレーム
+	const int32_t adjust = 30;
+	// リザルト背景が最大になっている間のみ描画
+	if (gameTime_ >= SecToFrame(45) + adjust && gameTime_ <= SecToFrame(50) - adjust) {
+		// 「リザルト」と書かれた文字描画
+		spriteResultText_->Draw();
+	}
 
 	///
 	///	ゲーム領域ではない画面両側を隠すスプライトの描画（これが一番手前にあるべき）

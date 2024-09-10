@@ -176,6 +176,7 @@ void Enemy::Draw(ViewProjection& viewProjection) {
 	
 	// 地面に着いたかつ、まだ予備動作が終わっていない場合のみ
 	if (hasReachedBottom_ /*&& !endAntic_*/) { // 1フレームだけレーザーが無い状態ができてしまうので、両方のレーザーを重ねて描画
+		// 予備動作レーザー本体の描画
 		modelLaser_->Draw(anticWorldTransform_, viewProjection);
 	}
 }

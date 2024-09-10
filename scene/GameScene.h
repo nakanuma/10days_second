@@ -147,8 +147,11 @@ private: // メンバ変数
 	Sprite* spriteScreenRight_ = nullptr;
 
 	/* リザルトで使用するもの */
+
 	// リザルトの最も後ろにあるスプライト（拡縮させるやつ）
 	Sprite* spriteResultBackGround_ = nullptr;
+	// 「リザルト」の文字が書いてあるスプライト
+	Sprite* spriteResultText_ = nullptr;
 
 	///
 	///	その他
