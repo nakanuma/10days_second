@@ -126,29 +126,12 @@ void Enemy::Update() {
 }
 
 void Enemy::StartAntic() { 
-	//// 予備動作レーザーの拡大速度
-	//const float kAnticScaleSpeed = 0.03f;
-
-	//// 予備動作用のYスケールを現在の半径まで拡大
-	//if (anticWorldTransform_.scale_.y < radius_) {
-	//	// 地面に着いてから60フレーム経過したら予備動作レーザーを拡大し始める
-	//	if (anticTimer_++ >= 60) {
-	//		anticWorldTransform_.scale_.y += kAnticScaleSpeed;
-	//	}
-	//	anticWorldTransform_.scale_.y = (std::min)(anticWorldTransform_.scale_.y, radius_);
-	//}
-
-	//// 予備動作が終了したかを確認
-	//if (anticWorldTransform_.scale_.y >= radius_) {
-	//	endAntic_ = true; // 予備動作終了
-	//}
-
 	// 予備動作レーザーの拡大にかける時間
-	const float kAnticDuration = 60.0f; // フレーム数を設定
+	const float kAnticDuration = 30.0f; // フレーム数を設定
 
 	// 進行度を0.0 ~ 1.0fの範囲で計算
-	if (anticTimer_++ >= 30) { // 地面に到達して30フレームしたら開始
-		float progress = (anticTimer_ - 30) / kAnticDuration; // 30フレーム後からスタート
+	if (anticTimer_++ >= 30) { // 地面に到達して指定フレームしたら開始
+		float progress = (anticTimer_ - 30) / kAnticDuration; // 指定フレーム後からスタート
 		progress = (std::min)(progress, 1.0f); // 進行度が1.0を超えないように
 
 		// EaseInQuad関数で拡大率を計算

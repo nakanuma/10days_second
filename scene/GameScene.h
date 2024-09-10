@@ -109,6 +109,14 @@ private: // メンバ変数
 	Model* modelPlayerLaser_ = nullptr;
 
 	///
+	///	スプライト
+	/// 
+
+	/*ゲーム領域ではない画面両側を隠すスプライト*/
+	Sprite* spriteScreenLeft_ = nullptr;
+	Sprite* spriteScreenRight_ = nullptr;
+
+	///
 	///	その他
 	/// 
 	

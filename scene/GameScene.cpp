@@ -43,6 +43,13 @@ GameScene::~GameScene() {
 	
 	delete modelLaser_;
 	delete modelPlayerLaser_;
+
+	///
+	///	スプライト
+	/// 
+	
+	delete spriteScreenLeft_;
+	delete spriteScreenRight_;
 }
 
 void GameScene::Initialize() {
@@ -82,6 +89,17 @@ void GameScene::Initialize() {
 	modelEnemy_ = Model::CreateFromOBJ("enemy", true);
 	// 敵出現マークのモデル生成
 	modelEnemyAppearMark_ = Model::CreateFromOBJ("enemyAppearMark", true);
+
+	///
+	///	スプライト生成
+	/// 
+
+	uint32_t textureWhite1x1 = TextureManager::Load("white1x1.png");
+	/*ゲーム領域ではない画面両側を隠すスプライト*/
+	spriteScreenLeft_ = Sprite::Create(textureWhite1x1, {0.0f, 0.0f}, {1.0f, 0.5f, 0.0f, 1.0f});
+	spriteScreenLeft_->SetSize({360.0f, 720.0f});
+	spriteScreenRight_ = Sprite::Create(textureWhite1x1, {920.0f, 0.0f}, {1.0f, 0.5f, 0.0f, 1.0f});
+	spriteScreenRight_->SetSize({360.0f, 720.0f});
 
 	///
 	///	その他
@@ -213,6 +231,15 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに前景スプライトの描画処理を追加できる
 	/// </summary>
+
+	///
+	///	ゲーム領域ではない画面両側を隠すスプライトの描画（これが一番手前にあるべき）
+	/// 
+
+	// 左側
+	spriteScreenLeft_->Draw();
+	// 右側
+	spriteScreenRight_->Draw();
 
 	// スプライト描画後処理
 	Sprite::PostDraw();
