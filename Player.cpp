@@ -29,6 +29,8 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 	
 	// ワールドトランスフォーム初期化
 	worldTransform_.Initialize();
+	// 初期位置を設定
+	worldTransform_.translation_ = {0.0f, -18.0f, 0.0f};
 	// X軸を回転させてモデルの上面を画面の向きに回転
 	worldTransform_.rotation_ = {0.0f, 0.0f, 1.571f};
 

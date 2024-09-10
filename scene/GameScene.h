@@ -63,6 +63,27 @@ public: // メンバ関数
 	/// </summary>
 	void EnemyGeneration();
 
+	/// <summary>
+	/// ゲームシーンでの経過時間による流れを全て記述
+	/// </summary>
+	void GameSceneFlow();
+
+	/// <summary>
+	/// WAVE数スプライトをいい感じに右から左へ移動させる（5秒間(300f)で行うので、制限必須）
+	/// </summary>
+	void WaveSpriteMove();
+
+	/// <summary>
+	/// リザルトの表示（そのWAVEの取得スコア、スコアによる獲得星を表示）
+	/// 備考 : 細い状態から広がる->広げた状態から細くする
+	/// </summary>
+	void ShowResult();
+
+	/// <summary>
+	/// 秒をフレームに変換
+	/// </summary>
+	int32_t SecToFrame(int32_t Second) { return Second * 60; }
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -112,16 +133,29 @@ private: // メンバ変数
 	///	スプライト
 	/// 
 
+	// 各ウェーブ開始時に出てくるウェーブの文字（1,2,3のテクスチャハンドルをセットして使い回す）
+	Sprite* spriteWaveNum_ = nullptr;
+	uint32_t wave1TextureHandle_;
+	uint32_t wave2TextureHandle_;
+	uint32_t wave3TextureHandle_;
+
+	// ゲームシーン背景
+	Sprite* spriteBackGround_ = nullptr;
+
 	/*ゲーム領域ではない画面両側を隠すスプライト*/
 	Sprite* spriteScreenLeft_ = nullptr;
 	Sprite* spriteScreenRight_ = nullptr;
+
+	/* リザルトで使用するもの */
+	// リザルトの最も後ろにあるスプライト（拡縮させるやつ）
+	Sprite* spriteResultBackGround_ = nullptr;
 
 	///
 	///	その他
 	/// 
 	
 	// ゲームシーン経過時間をカウント
-	uint32_t gameTime_;
+	int32_t gameTime_;
 	// 敵の生成頻度(フレーム)
 	uint32_t nextGenerationFrame_;
 };

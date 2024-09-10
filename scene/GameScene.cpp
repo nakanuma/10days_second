@@ -6,6 +6,9 @@
 #include <random>
 #include <numbers>
 
+// MyClass
+#include "Easing.h"
+
 GameScene::GameScene() {}
 
 GameScene::~GameScene() {
@@ -48,8 +51,14 @@ GameScene::~GameScene() {
 	///	スプライト
 	/// 
 	
+	delete spriteWaveNum_;
+
+	delete spriteBackGround_;
+
 	delete spriteScreenLeft_;
 	delete spriteScreenRight_;
+
+	delete spriteResultBackGround_;
 }
 
 void GameScene::Initialize() {
@@ -93,13 +102,33 @@ void GameScene::Initialize() {
 	///
 	///	スプライト生成
 	/// 
-
 	uint32_t textureWhite1x1 = TextureManager::Load("white1x1.png");
-	/*ゲーム領域ではない画面両側を隠すスプライト*/
+
+
+	/* 各ウェーブ開始時に出てくるウェーブの文字（1, 2, 3のテクスチャハンドルをセットして使い回す）*/
+	wave1TextureHandle_ = TextureManager::Load("images/wave1.png");
+	wave2TextureHandle_ = TextureManager::Load("images/wave2.png");
+	wave3TextureHandle_ = TextureManager::Load("images/wave3.png");
+
+	spriteWaveNum_ = Sprite::Create(wave1TextureHandle_, {0.0f, 0.0f});
+	spriteWaveNum_->SetAnchorPoint({0.5f, 0.5f}); // アンカーポイントを中心に設定
+
+	/* 背景 */
+	spriteBackGround_ = Sprite::Create(textureWhite1x1, {0.0f, 0.0f}, {0.5f, 0.5f, 0.5f, 1.0f});
+	spriteBackGround_->SetSize({1280.0f, 720.0f});
+
+	/* ゲーム領域ではない画面両側を隠すスプライト */
 	spriteScreenLeft_ = Sprite::Create(textureWhite1x1, {0.0f, 0.0f}, {1.0f, 0.5f, 0.0f, 1.0f});
-	spriteScreenLeft_->SetSize({360.0f, 720.0f});
-	spriteScreenRight_ = Sprite::Create(textureWhite1x1, {920.0f, 0.0f}, {1.0f, 0.5f, 0.0f, 1.0f});
-	spriteScreenRight_->SetSize({360.0f, 720.0f});
+	spriteScreenLeft_->SetSize({350.0f, 720.0f});
+	spriteScreenRight_ = Sprite::Create(textureWhite1x1, {930.0f, 0.0f}, {1.0f, 0.5f, 0.0f, 1.0f});
+	spriteScreenRight_->SetSize({350.0f, 720.0f});
+
+	/* リザルト関連 */
+
+	// リザルトの最も後ろの背景（拡縮するやつ）
+	spriteResultBackGround_ = Sprite::Create(textureWhite1x1, {640.0f, 360.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+	spriteResultBackGround_->SetAnchorPoint({0.5f, 0.5f}); // アンカーポイントを中心に設定
+	spriteResultBackGround_->SetSize({0.0f, 520.0f}); // 最初はXのサイズ0で生成。最大サイズは480
 
 	///
 	///	その他
@@ -152,8 +181,11 @@ void GameScene::Update() {
 		return false;
 	});
 
-	// 敵の自動生成を行う
-	EnemyGeneration();
+	///
+	/// ゲームシーン全ての流れの処理
+	/// 
+
+	GameSceneFlow();
 
 	///
 	///	全ての衝突判定を行う
@@ -183,6 +215,9 @@ void GameScene::Draw() {
 	/// <summary>
 	/// ここに背景スプライトの描画処理を追加できる
 	/// </summary>
+
+	/* ゲーム背景の描画 */
+	spriteBackGround_->Draw();
 
 	// スプライト描画後処理
 	Sprite::PostDraw();
@@ -233,6 +268,19 @@ void GameScene::Draw() {
 	/// </summary>
 
 	///
+	///	各ウェーブ開始時に、右から左へ出てくるウェーブ数の書いたスプライトの描画
+	/// 
+
+	spriteWaveNum_->Draw();
+
+	///
+	///	リザルト関連の描画
+	/// 
+
+	// リザルト表示時の最も後ろのスプライト描画
+	spriteResultBackGround_->Draw();
+
+	///
 	///	ゲーム領域ではない画面両側を隠すスプライトの描画（これが一番手前にあるべき）
 	/// 
 
@@ -260,6 +308,7 @@ void GameScene::Debug() {
 
 	// ゲームシーン経過時間を表示
 	ImGui::Text("GameTime : %d", gameTime_);
+	ImGui::DragInt("GameTime", &gameTime_);
 
 	ImGui::End();
 }
@@ -450,4 +499,187 @@ void GameScene::EnemyGeneration() {
 
 		enemyAppearMarks_.push_back(newMark);
 	}
+}
+
+void GameScene::GameSceneFlow() {
+	///
+	/// 0~5秒 : WAVE1表示スプライトを右から左へ
+	/// 
+
+	if (gameTime_ >= SecToFrame(0) && gameTime_ <= SecToFrame(5)) {
+		WaveSpriteMove();
+	}
+
+	///
+	///	5~35秒 : WAVE1用の敵を30秒間生成し続ける(まだ作ってないので、あとで各WAVEの敵生成用関数を作成する）
+	/// 
+
+	if (gameTime_ >= SecToFrame(5) && gameTime_ <= SecToFrame(35)) {
+		// 敵の自動生成を行う
+		EnemyGeneration();
+	}
+
+	///
+	///	35~45秒 : 何もしない（WAVE1で湧いた敵が完全に消えるくらいの想定がこのくらい）
+	/// 
+	
+	///
+	///	45~50秒 : リザルトの表示
+	/// 
+
+	if (gameTime_ >= SecToFrame(45) && gameTime_ <= SecToFrame(50)) {
+		ShowResult();
+	}
+
+	/*------------------------------------------*/
+	/*---ウェーブセレクトで2を選択したらここへ飛ばす---*/
+	/*------------------------------------------*/
+
+	///
+	/// 50~55秒 : WAVE2表示スプライトを右から左へ
+	///
+	if (gameTime_ >= SecToFrame(50) && gameTime_ <= SecToFrame(55)) {
+		spriteWaveNum_->SetTextureHandle(wave2TextureHandle_); // WAVE2のテクスチャをセット
+		WaveSpriteMove();
+	}
+
+	///
+	///	55~85秒 : WAVE2用の敵を30秒間生成し続ける
+	/// 
+	
+	if (gameTime_ >= SecToFrame(55) && gameTime_ <= SecToFrame(85)) {
+		// 敵の自動生成を行う
+		EnemyGeneration();
+	}
+
+	///
+	///	85~95秒 : 何もしない（WAVE2で湧いた敵が完全に消えるくらいの想定がこのくらい）
+	/// 
+
+	///
+	///	95~100秒 : リザルトの表示
+	///
+
+	if (gameTime_ >= SecToFrame(95) && gameTime_ <= SecToFrame(100)) {
+		ShowResult();
+	}
+
+	/*------------------------------------------*/
+	/*---ウェーブセレクトで3を選択したらここへ飛ばす---*/
+	/*------------------------------------------*/
+
+	///
+	/// 100~105秒 : WAVE3表示スプライトを右から左へ
+	///
+	if (gameTime_ >= SecToFrame(100) && gameTime_ <= SecToFrame(105)) {
+		spriteWaveNum_->SetTextureHandle(wave3TextureHandle_); // WAVE3のテクスチャをセット
+		WaveSpriteMove();
+	}
+
+	///
+	///	105~135秒 : WAVE3用の敵を30秒間生成し続ける
+	/// 
+	
+	if (gameTime_ >= SecToFrame(105) && gameTime_ <= SecToFrame(135)) {
+		// 敵の自動生成を行う
+		EnemyGeneration();
+	}
+
+	///
+	///	135~145秒 : 何もしない（WAVE3で湧いた敵が完全に消えるくらいの想定がこのくらい）
+	///
+	
+	///
+	///	145~150秒 : リザルトの表示
+	///
+
+	if (gameTime_ >= SecToFrame(145) && gameTime_ <= SecToFrame(150)) {
+		ShowResult();
+	}
+}
+
+void GameScene::WaveSpriteMove() {
+	// WAVEスプライトの初期位置
+	const float startX = 1280.0f;
+	// 中間の位置
+	const float middleX = 640.0f;
+	// 最終位置
+	const float endX = 0.0f;
+	// Y座標（固定）
+	const float yPos = 360.0f;
+	// 移動にかけるフレーム数（60フレーム = 1秒）
+	const int moveDuration = 60;
+	// 待機時間（1秒 = 60フレーム）
+	const int waitDuration = 60;
+
+	// 現在の経過時間を取得
+	int time = gameTime_ % (moveDuration * 3 + waitDuration * 2); // 全体で移動と待機が3秒＋2秒
+
+	// 1秒経過後、1280 -> 640までEaseOutQuartで移動
+	if (time >= moveDuration && time < moveDuration * 2) {
+		float t = static_cast<float>(time - moveDuration) / moveDuration;
+		float easedPos = Easing::EaseOutQuart(startX, middleX, t);
+		spriteWaveNum_->SetPosition({easedPos, yPos});
+	}
+	// 1秒の待機（640の位置で静止）
+	else if (time >= moveDuration * 2 && time < moveDuration * 2 + waitDuration) {
+		spriteWaveNum_->SetPosition({middleX, yPos});
+	}
+	// その後、640 -> 0までEaseInQuartで移動
+	else if (time >= moveDuration * 2 + waitDuration && time < moveDuration * 3 + waitDuration) {
+		float t = static_cast<float>(time - (moveDuration * 2 + waitDuration)) / moveDuration;
+		float easedPos = Easing::EaseOutQuart(middleX, endX, t);
+		spriteWaveNum_->SetPosition({easedPos, yPos});
+	}
+	// それ以外は静止（初期状態）
+	else if (time < moveDuration) {
+		spriteWaveNum_->SetPosition({startX, yPos});
+	}
+}
+
+void GameScene::ShowResult() {
+	///
+	///	5秒かけてリザルト背景の拡縮
+	/// （0.5秒で拡大->4秒待機->0.5秒で拡縮）
+	/// 
+	{
+		// スプライトの初期サイズ
+		const float startSize = 0.0f;
+		// 中間のサイズ
+		const float middleSize = 480.0f;
+		// 最終サイズ
+		const float endSize = 0.0f;
+		// サイズ拡大にかけるフレーム数（0.5秒 = 30フレーム）
+		const int scaleUpDuration = 30;
+		// 待機時間（4秒 = 240フレーム）
+		const int waitDuration = 240;
+		// サイズ縮小にかけるフレーム数（0.5秒 = 30フレーム）
+		const int scaleDownDuration = 30;
+
+		// 現在の経過時間を取得
+		int time = gameTime_ % (scaleUpDuration + waitDuration + scaleDownDuration); // 全体で拡大、待機、縮小
+
+		// 0.5秒かけてサイズを0から480まで拡大
+		if (time < scaleUpDuration) {
+			float t = static_cast<float>(time) / scaleUpDuration;
+			float easedSize = Easing::EaseOutQuart(startSize, middleSize, t);
+			spriteResultBackGround_->SetSize({easedSize, 520.0f});
+		}
+		// 4秒待機
+		else if (time < scaleUpDuration + waitDuration) {
+			spriteResultBackGround_->SetSize({middleSize, 520.0f});
+		}
+		// 0.5秒かけてサイズを480から0まで縮小
+		else if (time < scaleUpDuration + waitDuration + scaleDownDuration) {
+			float t = static_cast<float>(time - (scaleUpDuration + waitDuration)) / scaleDownDuration;
+			float easedSize = Easing::EaseInQuart(middleSize, endSize, t);
+			spriteResultBackGround_->SetSize({easedSize, 520.0f});
+		}
+		// それ以外はサイズを0に設定（初期状態）
+		else {
+			spriteResultBackGround_->SetSize({startSize, 520.0f});
+		}
+	}
+
+
 }

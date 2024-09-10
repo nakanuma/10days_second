@@ -30,7 +30,7 @@ void Laser::Update(Vector3 translation, Vector3 rotation) {
 	worldTransform_.rotation_ = rotation;
 
 	// レーザーの始点を元に、オブジェクトの座標を求める
-	Vector3 offset = {kLength, 0.0f, 0.0f};
+	Vector3 offset = {kLength + 1.5f, 0.0f, 0.0f}; // ここのX値に足す数値でどれくらい前からレーザーが出るか設定
 	offset = Vector3::Transform(offset, Matrix4x4::MakeRotateXYZ(rotation.x, rotation.y, rotation.z));
 
 	worldTransform_.translation_ = origin_ + offset;

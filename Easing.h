@@ -7,4 +7,8 @@ public:
 
 	// Quart
 	static float EaseInQuart(float t);
+	static float EaseOutQuart(float t);
+
+	static float EaseInQuart(float start, float end, float t);
+	static float EaseOutQuart(float start, float end, float t);
 };
