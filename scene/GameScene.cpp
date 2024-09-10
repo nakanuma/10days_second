@@ -191,7 +191,9 @@ void GameScene::Update() {
 	/// ゲームシーン全ての流れの処理
 	/// 
 
-	GameSceneFlow();
+	/*GameSceneFlow();*/
+	// デバッグ用で常に敵をスポーンさせる
+	EnemyGeneration();
 
 	///
 	///	全ての衝突判定を行う
@@ -287,15 +289,15 @@ void GameScene::Draw() {
 	spriteResultBackGround_->Draw();
 
 	// リザルトの最も後ろのスプライトが最大横幅になるまでのフレーム
-	const int32_t adjust = 30;
-	// リザルト表示のタイミングかつ、リザルト背景が最大になっている間のみ描画
-	if (gameTime_ >= SecToFrame(45) + adjust && gameTime_ <= SecToFrame(50) - adjust || 
-		gameTime_ >= SecToFrame(95) + adjust && gameTime_ <= SecToFrame(100) - adjust ||
-	    gameTime_ >= SecToFrame(145) + adjust && gameTime_ <= SecToFrame(150) - adjust
-		) {
-		// 「リザルト」と書かれた文字描画
-		spriteResultText_->Draw();
-	}
+	//const int32_t adjust = 30;
+	//// リザルト表示のタイミングかつ、リザルト背景が最大になっている間のみ描画
+	//if (gameTime_ >= SecToFrame(45) + adjust && gameTime_ <= SecToFrame(50) - adjust || 
+	//	gameTime_ >= SecToFrame(95) + adjust && gameTime_ <= SecToFrame(100) - adjust ||
+	//    gameTime_ >= SecToFrame(145) + adjust && gameTime_ <= SecToFrame(150) - adjust
+	//	) {
+	//	// 「リザルト」と書かれた文字描画
+	//	spriteResultText_->Draw();
+	//}
 
 	///
 	///	ゲーム領域ではない画面両側を隠すスプライトの描画（これが一番手前にあるべき）
@@ -315,26 +317,39 @@ void GameScene::Draw() {
 void GameScene::Debug() { 
 	ImGui::Begin("GameScene"); 
 
-	//// 敵を出現させる
-	//if (ImGui::Button("EnemySpawn")) {
-	//	Enemy* newEnemy = new Enemy();
-	//	newEnemy->Initialize(modelEnemy_, modelLaser_, {4.0f, 12.0f, 0.0f});
-
-	//	enemies_.push_back(newEnemy);
-	//}
-
 	// ゲームシーン経過時間を表示
-	ImGui::Text("GameTime : %d", gameTime_);
-	ImGui::DragInt("GameTime", &gameTime_);
+	int32_t timer = gameTime_ / 60;
+	ImGui::DragInt("Timer", &timer);
+	// 現在スコアを表示
+	int32_t score = player_->GetScore();
+	ImGui::DragInt("Score", &score);
+	// 各種リセット
+	if (ImGui::Button("Reset")) {
+
+		// タイマーのリセット
+		gameTime_ = 0;
+		// 敵全てを死亡させる
+		for (Enemy* enemy : enemies_) {
+			enemy->Dead();
+		}
+		// 敵出現マーク全てを死亡させる
+		for (EnemyAppearMark* mark : enemyAppearMarks_) {
+			mark->Dead();
+		}
+		// スコアのリセット
+		player_->SetScore(0);
+	}
+
+	ImGui::Text("---Parameter---");
+	ImGui::DragFloat("playerAttackDamage", &playerAttackDamage_, 0.001f); // プレイヤーのダメージ
+	ImGui::DragFloat("enemyAttackDamage", &enemyAttackDamage_, 0.001f); // 敵のレーザーダメージ
+	ImGui::DragInt("enemtSpawnRate", &enemySpawnRate_, 1); // スポーン頻度(frame)
 
 	ImGui::End();
 }
 
 void GameScene::CheckAllCollision() {
 	#pragma region プレイヤーのレーザー->敵（OBB->Sphere）
-
-	// プレイヤーのレーザーが敵のサイズを増加させる量（要調整。今は定数にしてるけどあとでいじれるようにしたい）
-	const float kIncrementSize = 0.01f;
 
 	// プレイヤーのレーザーが有効である場合
 	if (player_->GetLaser().IsActive()) {
@@ -353,7 +368,7 @@ void GameScene::CheckAllCollision() {
 			if (laserOBB.IsCollision(enemyCollider)) {
 				// 敵が地面にいないときのみ衝突した際の処理を呼ぶ（地面にいる敵を大きくしないようにするため）
 				if (!enemy->HasReachedBottom()) {
-					enemy->OnCollision(kIncrementSize);
+					enemy->OnCollision(playerAttackDamage_);
 				}
 			}
 		}
@@ -362,9 +377,6 @@ void GameScene::CheckAllCollision() {
 	#pragma endregion
 
 	#pragma region 敵のレーザー->敵（OBB->Sphere）
-
-	// 敵のレーザーが敵のサイズを増加させる量（要調整。今は定数にしてるけどあとでいじれるようにしたい）
-	const float kEnemyIncrementSize = 0.008f;
 
 	// 各敵のレーザーについて処理を行う
 	for (Enemy* shooterEnemy : enemies_) {
@@ -385,7 +397,7 @@ void GameScene::CheckAllCollision() {
 					if (laserOBB.IsCollision(enemyColider)) {
 						// 衝突した敵のサイズを増加させる（地面にいる敵には当たらないようにする）
 						if (!targetEnemy->HasReachedBottom()) {
-							targetEnemy->OnCollision(kEnemyIncrementSize);
+							targetEnemy->OnCollision(enemyAttackDamage_);
 						}
 					}
 				}
@@ -489,10 +501,10 @@ void GameScene::EnemyGeneration() {
 	/// 
 
 	// 敵を生成するまでの最小フレーム数と最大フレーム数
-	const uint32_t minFrames = 180;
+	/*const uint32_t minFrames = 180;
 	const uint32_t maxFrames = 180;
 	std::uniform_int_distribution<uint32_t> distFrame(minFrames, maxFrames);
-	nextGenerationFrame_ = distFrame(rng);
+	nextGenerationFrame_ = distFrame(rng);*/
 
 	///
 	///	実際に敵の生成を行う & 敵出現マークの生成も行う
@@ -501,7 +513,7 @@ void GameScene::EnemyGeneration() {
 	// 敵出現マークのY座標（一律で固定）
 	const float kEnemyAppearMarkY = 14.0f;
 
-	if (gameTime_ % nextGenerationFrame_ == 0) {
+	if (gameTime_ % enemySpawnRate_ == 0) {
 		Enemy* newEnemy = new Enemy();
 		newEnemy->Initialize(modelEnemy_, modelLaser_, {randomX, kGenerateY, 0.0f}, randomRadius);
 

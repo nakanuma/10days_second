@@ -32,6 +32,7 @@ public:
 
 	// 死亡したかを取得
 	bool IsDead() { return isDead_; }
+	void Dead() { isDead_ = true; }
 
 private:
 	// ワールドトランスフォーム

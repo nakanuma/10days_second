@@ -161,4 +161,12 @@ private: // メンバ変数
 	int32_t gameTime_;
 	// 敵の生成頻度(フレーム)
 	uint32_t nextGenerationFrame_;
+
+	///
+	///	調整可能項目
+	/// 
+
+	float playerAttackDamage_ = 0.01f; // デフォルト値
+	float enemyAttackDamage_ = 0.008f; // デフォルト値
+	int32_t enemySpawnRate_ = 180; // デフォルト値(frame)
 };

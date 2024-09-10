@@ -56,6 +56,7 @@ public:
 	bool HasReachedBottom() { return hasReachedBottom_; }
 	// レーザーの取得
 	Laser& GetLaser() { return laser_; }
+	void Dead() { isDead_ = true; }
 
 private:
 	///

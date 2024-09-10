@@ -53,6 +53,10 @@ public:
 	float GetRadius() { return kRadius_; }
 	// レーザーの取得
 	Laser& GetLaser() { return laser_; }
+	// スコア取得
+	int32_t GetScore() { return score_; }
+	// スコアをリセット
+	void SetScore(int32_t amount) { score_ = amount; }
 
 private:
 	///
