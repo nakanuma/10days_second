@@ -32,7 +32,7 @@ void EnemyAppearMark::Update() {
 	/// 
 
 	// Alpha値の変化スピード
-	const float kAlphaSpeed = 0.12f;
+	const float kAlphaSpeed = 0.1f; // 大きいほど早く点滅する
 
 	// 薄い状態 -> 濃くする（Alpha値増加状態）
 	if (alphaIncreasing_) {

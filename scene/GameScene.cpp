@@ -76,9 +76,9 @@ void GameScene::Initialize() {
 	///	レーザー
 	/// 
 
-	// レーザーモデル生成
-	modelLaser_ = Model::CreateFromOBJ("laser", true);
-	// レーザーモデル（プレイヤー）生成
+	// レーザーモデル（敵用）生成
+	modelLaser_ = Model::CreateFromOBJ("enemy_laser", true);
+	// レーザーモデル（プレイヤー用）生成
 	modelPlayerLaser_ = Model::CreateFromOBJ("playerLaser", true);
 
 	///
@@ -96,9 +96,9 @@ void GameScene::Initialize() {
 	/// 
 	
 	// 敵モデル生成
-	modelEnemy_ = Model::CreateFromOBJ("enemy", true);
+	modelEnemy_ = Model::CreateFromOBJ("Enemy_2", true);
 	// 敵出現マークのモデル生成
-	modelEnemyAppearMark_ = Model::CreateFromOBJ("enemyAppearMark", true);
+	modelEnemyAppearMark_ = Model::CreateFromOBJ("danger", true);
 
 	///
 	///	スプライト生成
@@ -119,9 +119,9 @@ void GameScene::Initialize() {
 	spriteBackGround_->SetSize({1280.0f, 720.0f});
 
 	/* ゲーム領域ではない画面両側を隠すスプライト */
-	spriteScreenLeft_ = Sprite::Create(textureWhite1x1, {0.0f, 0.0f}, {1.0f, 0.5f, 0.0f, 1.0f});
+	spriteScreenLeft_ = Sprite::Create(textureWhite1x1, {0.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f});
 	spriteScreenLeft_->SetSize({350.0f, 720.0f});
-	spriteScreenRight_ = Sprite::Create(textureWhite1x1, {930.0f, 0.0f}, {1.0f, 0.5f, 0.0f, 1.0f});
+	spriteScreenRight_ = Sprite::Create(textureWhite1x1, {930.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f});
 	spriteScreenRight_->SetSize({350.0f, 720.0f});
 
 	/* リザルト関連 */
@@ -288,8 +288,11 @@ void GameScene::Draw() {
 
 	// リザルトの最も後ろのスプライトが最大横幅になるまでのフレーム
 	const int32_t adjust = 30;
-	// リザルト背景が最大になっている間のみ描画
-	if (gameTime_ >= SecToFrame(45) + adjust && gameTime_ <= SecToFrame(50) - adjust) {
+	// リザルト表示のタイミングかつ、リザルト背景が最大になっている間のみ描画
+	if (gameTime_ >= SecToFrame(45) + adjust && gameTime_ <= SecToFrame(50) - adjust || 
+		gameTime_ >= SecToFrame(95) + adjust && gameTime_ <= SecToFrame(100) - adjust ||
+	    gameTime_ >= SecToFrame(145) + adjust && gameTime_ <= SecToFrame(150) - adjust
+		) {
 		// 「リザルト」と書かれた文字描画
 		spriteResultText_->Draw();
 	}
