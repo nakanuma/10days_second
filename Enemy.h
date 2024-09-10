@@ -17,7 +17,7 @@ public:
 	/// <param name="modelLaser">レーザーのモデル</param>
 	/// <param name="position">初期スポーン位置</param>
 	/// /// <param name="position">半径</param>
-	void Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position, float radius);
+	void Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position, float radius, float fallSpeed);
 
 	// 更新
 	void Update();

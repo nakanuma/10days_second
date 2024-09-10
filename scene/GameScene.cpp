@@ -343,7 +343,8 @@ void GameScene::Debug() {
 	ImGui::Text("---Parameter---");
 	ImGui::DragFloat("playerAttackDamage", &playerAttackDamage_, 0.001f); // プレイヤーのダメージ
 	ImGui::DragFloat("enemyAttackDamage", &enemyAttackDamage_, 0.001f); // 敵のレーザーダメージ
-	ImGui::DragInt("enemtSpawnRate", &enemySpawnRate_, 1); // スポーン頻度(frame)
+	ImGui::DragFloat("enemyFallSpeed", &enemyFallSpeed_, 0.001f); // 敵の落下速度
+	ImGui::DragInt("enemtSpawnRate", &enemySpawnRate_, 1);              // スポーン頻度(frame)
 
 	ImGui::End();
 }
@@ -515,7 +516,7 @@ void GameScene::EnemyGeneration() {
 
 	if (gameTime_ % enemySpawnRate_ == 0) {
 		Enemy* newEnemy = new Enemy();
-		newEnemy->Initialize(modelEnemy_, modelLaser_, {randomX, kGenerateY, 0.0f}, randomRadius);
+		newEnemy->Initialize(modelEnemy_, modelLaser_, {randomX, kGenerateY, 0.0f}, randomRadius, enemyFallSpeed_);
 
 		enemies_.push_back(newEnemy);
 
