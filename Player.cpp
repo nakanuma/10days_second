@@ -275,13 +275,13 @@ void Player::Draw(ViewProjection& viewProjection) {
 void Player::Debug() { 
 	ImGui::Begin("player"); 
 	// WorldTransform
-	ImGui::Text("WorldTransform");
+	/*ImGui::Text("WorldTransform");
 	ImGui::DragFloat3("Translation", &worldTransform_.translation_.x, 0.01f);
 	ImGui::DragFloat3("Rotation", &worldTransform_.rotation_.x, 0.01f);
-	ImGui::DragFloat3("Scale", &worldTransform_.scale_.x, 0.01f);
+	ImGui::DragFloat3("Scale", &worldTransform_.scale_.x, 0.01f);*/
 	// Parameter
 	ImGui::Text("HP : %d", hp_);
-	ImGui::Text("Score : %d", score_);
+	/*ImGui::Text("Score : %d", score_);*/
 	ImGui::Text("---Parameter---");
 	ImGui::DragFloat("HorizontalSpeed", &characterSpeed_, 0.01f);
 	ImGui::DragFloat("AscendingSpeed", &autoAscendingSpeed_, 0.01f);
