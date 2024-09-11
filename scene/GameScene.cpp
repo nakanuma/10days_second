@@ -3,18 +3,18 @@
 #include "imgui.h"
 
 #include <cassert>
-#include <random>
 #include <numbers>
+#include <random>
 
 GameScene::GameScene() {}
 
 GameScene::~GameScene() {
 	/* 各種開放 */
-	
+
 	///
 	///	プレイヤー関連
-	/// 
-	
+	///
+
 	// プレイヤーモデル
 	delete modelPlayer_;
 	// プレイヤー
@@ -22,7 +22,7 @@ GameScene::~GameScene() {
 
 	///
 	///	敵
-	/// 
+	///
 
 	// 敵モデル
 	delete modelEnemy_;
@@ -33,8 +33,8 @@ GameScene::~GameScene() {
 
 	///
 	///	レーザー
-	/// 
-	
+	///
+
 	delete modelLaser_;
 	delete modelPlayerLaser_;
 }
@@ -51,7 +51,7 @@ void GameScene::Initialize() {
 
 	///
 	///	レーザー
-	/// 
+	///
 
 	// レーザーモデル生成
 	modelLaser_ = Model::CreateFromOBJ("laser", true);
@@ -60,8 +60,8 @@ void GameScene::Initialize() {
 
 	///
 	///	プレイヤー関連
-	/// 
-	
+	///
+
 	// プレイヤーモデル生成
 	modelPlayer_ = Model::CreateFromOBJ("player", true);
 	// プレイヤー生成と初期化
@@ -70,15 +70,15 @@ void GameScene::Initialize() {
 
 	///
 	///	敵関連
-	/// 
-	
+	///
+
 	// 敵モデル生成
 	modelEnemy_ = Model::CreateFromOBJ("enemy", true);
 
 	///
 	///	その他
-	/// 
-	
+	///
+
 	// ゲームシーン経過時間の初期化
 	gameTime_ = 0;
 }
@@ -86,13 +86,13 @@ void GameScene::Initialize() {
 void GameScene::Update() {
 	///
 	///	プレイヤー更新
-	/// 
-	
+	///
+
 	player_->Update();
 
 	///
 	///	敵全ての更新
-	/// 
+	///
 
 	for (Enemy* enemy : enemies_) {
 		enemy->Update();
@@ -111,15 +111,23 @@ void GameScene::Update() {
 
 	///
 	///	全ての衝突判定を行う
-	/// 
+	///
 
 	CheckAllCollision();
 
+
+	///
+	///	リセット
+	///
+
+	// メモリリーク起こすから一旦コメントアウト
+	// Reset();
+
 	///
 	///	デバッグ情報
-	/// 
-	
-	Debug();
+	///
+
+	// Debug();
 
 	/// ゲームシーン経過時間をカウント
 	gameTime_++;
@@ -154,13 +162,15 @@ void GameScene::Draw() {
 
 	///
 	///	プレイヤー描画
-	/// 
-	
-	player_->Draw(viewProjection_);
+	///
+
+	if (player_->IsAlive()) {
+		player_->Draw(viewProjection_);
+	}
 
 	///
 	///	敵全ての描画
-	/// 
+	///
 
 	for (Enemy* enemy : enemies_) {
 		enemy->Draw(viewProjection_);
@@ -184,8 +194,8 @@ void GameScene::Draw() {
 #pragma endregion
 }
 
-void GameScene::Debug() { 
-	ImGui::Begin("GameScene"); 
+void GameScene::Debug() {
+	ImGui::Begin("GameScene");
 
 	// 敵を出現させる
 	if (ImGui::Button("EnemySpawn")) {
@@ -202,7 +212,7 @@ void GameScene::Debug() {
 }
 
 void GameScene::CheckAllCollision() {
-	#pragma region プレイヤーのレーザー->敵（OBB->Sphere）
+#pragma region プレイヤーのレーザー->敵（OBB->Sphere）
 
 	// プレイヤーのレーザーが敵のサイズを増加させる量（要調整。今は定数にしてるけどあとでいじれるようにしたい）
 	const float kIncrementSize = 0.01f;
@@ -230,9 +240,9 @@ void GameScene::CheckAllCollision() {
 		}
 	}
 
-	#pragma endregion
+#pragma endregion
 
-	#pragma region 敵のレーザー->敵（OBB->Sphere）
+#pragma region 敵のレーザー->敵（OBB->Sphere）
 
 	// 敵のレーザーが敵のサイズを増加させる量（要調整。今は定数にしてるけどあとでいじれるようにしたい）
 	const float kEnemyIncrementSize = 0.008f;
@@ -264,9 +274,9 @@ void GameScene::CheckAllCollision() {
 		}
 	}
 
-	#pragma endregion
+#pragma endregion
 
-	#pragma region 敵のレーザー->プレイヤー（OBB->Sphere）
+#pragma region 敵のレーザー->プレイヤー（OBB->Sphere）
 
 	// 各敵のレーザーについて処理を行う
 	for (Enemy* shooterEnemy : enemies_) {
@@ -274,7 +284,7 @@ void GameScene::CheckAllCollision() {
 			Laser& laser = shooterEnemy->GetLaser();
 			// レーザーをOBBとして扱う
 			OBBCollider laserOBB = laser.GetOBB();
-			
+
 			// プレイヤーを球体として扱う
 			SphereCollider playerCollider;
 			playerCollider.center = player_->GetWorldPosition();
@@ -288,9 +298,9 @@ void GameScene::CheckAllCollision() {
 		}
 	}
 
-	#pragma endregion
+#pragma endregion
 
-	#pragma region 敵本体->プレイヤー（Sphere->Sphere）
+#pragma region 敵本体->プレイヤー（Sphere->Sphere）
 
 	// プレイヤーのコライダーを設定
 	SphereCollider playerCollider;
@@ -311,21 +321,21 @@ void GameScene::CheckAllCollision() {
 		}
 	}
 
-	#pragma endregion
+#pragma endregion
 }
 
 void GameScene::EnemyGeneration() {
 	///
 	/// 乱数生成器を初期化
-	/// 
-	
+	///
+
 	std::random_device rd;
 	std::mt19937 rng(rd());
 
 	///
 	///	生成時の各座標について
-	/// 
-	
+	///
+
 	// X座標。指定範囲の間をランダムで生成
 	const float kGenerateX = 12.0f;
 	std::uniform_real_distribution<float> distX(-kGenerateX, kGenerateX);
@@ -337,7 +347,7 @@ void GameScene::EnemyGeneration() {
 
 	///
 	///	生成の頻度について
-	/// 
+	///
 
 	// 敵を生成するまでの最小フレーム数と最大フレーム数
 	const uint32_t minFrames = 120;
@@ -347,12 +357,40 @@ void GameScene::EnemyGeneration() {
 
 	///
 	///	実際に敵の生成を行う
-	/// 
-	
+	///
+
 	if (gameTime_ % nextGenerationFrame_ == 0) {
 		Enemy* newEnemy = new Enemy();
 		newEnemy->Initialize(modelEnemy_, modelLaser_, {randomX, kGenerateY, 0.0f});
 
 		enemies_.push_back(newEnemy);
+	}
+}
+
+void GameScene::Reset() {
+
+	XINPUT_STATE joyState;
+
+	XINPUT_STATE joyPreState;
+
+	// ゲームパッド未接続なら何もせず抜ける
+	if (!Input::GetInstance()->GetJoystickState(0, joyState)) {
+		return;
+	}
+
+	if (!Input::GetInstance()->GetJoystickStatePrevious(0, joyPreState)) {
+		return;
+	}
+
+	// Yボタンを押したらリセット
+	if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_Y) {
+		if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_Y)) {
+			// 敵を全て削除する
+			for (Enemy* enemy : enemies_) {
+				delete enemy;
+			}
+			enemies_.clear(); // 敵リストをクリア
+			Initialize();
+		}
 	}
 }

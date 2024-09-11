@@ -1,8 +1,8 @@
 #pragma once
-#include "WorldTransform.h"
-#include "ViewProjection.h"
-#include "Model.h"
 #include "Input.h"
+#include "Model.h"
+#include "ViewProjection.h"
+#include "WorldTransform.h"
 #include <list>
 
 // MyClass
@@ -33,6 +33,8 @@ public:
 	void Invincible();
 	// 衝突時コールバック（HPを減らして無敵にする）
 	void OnCollision();
+	// 生存しているかの確認
+	void CheckIsAlive();
 
 	// 描画
 	void Draw(ViewProjection& viewProjection);
@@ -42,26 +44,28 @@ public:
 
 	///
 	///	アクセッサ
-	/// 
-	
+	///
+
 	// ワールド座標取得
 	Vector3 GetWorldPosition();
 	// 半径を取得
 	float GetRadius() { return kRadius_; }
 	// レーザーの取得
 	Laser& GetLaser() { return laser_; }
+	// 生存フラグの取得
+	bool IsAlive() { return isAlive_; }
 
 private:
 	///
 	///	汎用機能
-	/// 
-	
+	///
+
 	Input* input_ = nullptr;
 
 	///
 	///	プレイヤーの基本的な情報
-	/// 
-	
+	///
+
 	// ワールドトランスフォーム
 	WorldTransform worldTransform_;
 	// モデル
@@ -79,11 +83,13 @@ private:
 	const int32_t kInvincibleTime_ = 120;
 	// 無敵時間カウント
 	int32_t invincibleCount_;
+	// 生存フラグ
+	bool isAlive_ = true;
 
 	///
 	///	レーザー関連の情報
-	/// 
-	
+	///
+
 	// レーザー
 	Laser laser_;
 	// モデル
@@ -91,8 +97,8 @@ private:
 
 	///
 	///	その他パラメーターなど
-	/// 
-	
+	///
+
 	// レーザー射撃中/非射撃中の自動上昇・下降の速度
 	float autoAscendingSpeed_;
 	float autoDescendingSpeed_;

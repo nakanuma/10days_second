@@ -61,6 +61,11 @@ public: // メンバ関数
 	/// </summary>
 	void EnemyGeneration();
 
+	/// <summary>
+	/// リセット
+	/// </summary>
+	void Reset();
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
