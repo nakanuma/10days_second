@@ -298,13 +298,19 @@ void GameScene::Draw() {
 	}
 
 	///
-	///	ゲーム領域ではない画面両側を隠すスプライトの描画（これが一番手前にあるべき）
+	///	ゲーム領域ではない画面両側を隠すスプライトの描画
 	/// 
 
 	// 左側
 	spriteScreenLeft_->Draw();
 	// 右側
 	spriteScreenRight_->Draw();
+
+	///
+	///	プレイヤーのUIを描画
+	/// 
+
+	player_->DrawUI();
 
 	// スプライト描画後処理
 	Sprite::PostDraw();

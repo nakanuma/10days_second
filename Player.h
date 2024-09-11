@@ -2,8 +2,10 @@
 #include "WorldTransform.h"
 #include "ViewProjection.h"
 #include "Model.h"
+#include "Sprite.h"
 #include "Input.h"
 #include <list>
+#include <vector>
 
 // MyClass
 #include "Laser.h"
@@ -38,6 +40,8 @@ public:
 
 	// 描画
 	void Draw(ViewProjection& viewProjection);
+	// UIの描画（スプライトのみ）
+	void DrawUI();
 
 	// デバッグ表示
 	void Debug();
@@ -77,7 +81,7 @@ private:
 	const float kRadius_ = 1.0f;
 
 	// 体力
-	uint32_t hp_;
+	int32_t hp_;
 	// 現在スコア
 	uint32_t score_;
 	// 無敵状態かどうか
@@ -135,4 +139,22 @@ private:
 	// レーザー射撃中/非射撃中の自動上昇・下降の速度
 	float autoAscendingSpeed_;
 	float autoDescendingSpeed_;
+
+	///
+	///	スプライト関連
+	/// 
+	
+	/* 左上の残りHP表示 */
+
+	// ハートのスプライト（最大HPの数だけ）
+	std::vector<Sprite*> heartSprites_;
+
+	/* 左上の現在スコア表示 */
+
+	// スコアの桁数
+	const int32_t kMaxScoreDigit = 6;
+	// スコア表示に使用するスプライト（6桁分）
+	Sprite* spriteScore_[6];
+	// 0~9までの数字が書いてある数字テクスチャ
+	uint32_t textureNumber_;
 };

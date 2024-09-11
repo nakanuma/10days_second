@@ -4,6 +4,7 @@
 #include <numbers>
 
 #include "imgui.h"
+#include "TextureManager.h"
 
 // MyClass
 #include "Easing.h"
@@ -13,6 +14,19 @@ Player::~Player() {
 	///	各種開放
 	///		
 	
+	///
+	///	スプライト
+	/// 
+
+	/* ハート（HP） */
+	for (Sprite* sprite : heartSprites_) {
+		delete sprite;
+	}
+
+	/* スコア（6桁分） */
+	for (int32_t i = 0; i < kMaxScoreDigit; i++) {
+		delete spriteScore_[i];
+	}
 }
 
 void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
@@ -75,6 +89,28 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 
 	// ワールドトランスフォームを更新しておく
 	anticWorldTransform_.UpdateMatrix();
+
+	///
+	///	スプライト生成
+	///		
+	
+	/* ハート（HP） */
+
+	// ハートのテクスチャ取得
+	uint32_t textureHeart = TextureManager::Load("images/player_life.png");
+	// ハートスプライトのインスタンスをHPの値だけ取得
+	for (int32_t i = 0; i < hp_; ++i) {
+		Sprite* heartSprite = Sprite::Create(textureHeart, {70.0f + (i * 70), 40.0f}); // x70の位置から、70pixelずつ間隔を開ける
+		heartSprites_.push_back(heartSprite);
+	}
+
+	/* スコア（6桁分） */
+	textureNumber_ = TextureManager::Load("images/number.png");
+	for (int32_t i = 0; i < kMaxScoreDigit; i++) {
+		spriteScore_[i] = Sprite::Create(textureNumber_, {0.0f, 0.0f});
+		spriteScore_[i]->SetSize({21.0f, 30.0f}); // 数字1文字分のサイズを指定
+	}
+
 }
 
 void Player::Update() {
@@ -267,6 +303,10 @@ void Player::Attack() {
 	// RBボタンの現在の押下状態を記録
 	bool isLaserButtonPressed = (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER);
 
+	/*if (worldTransform_.translation_.y >= 16.0f) {
+		isLaserButtonPressed = false;
+	}*/
+
 	// RBを押した場合
 	if (isLaserButtonPressed) {
 		// レーザーの初期化
@@ -286,7 +326,7 @@ void Player::Attack() {
 		///
 		/// RBが押された瞬間（前フレームで押されていなかった場合）のみ、プレイヤーを上に跳ねさせる
 		/// 
-		if (!wasLaserButtonPressed_ && !isRising_) {
+		if (!wasLaserButtonPressed_ && !isRising_ && worldTransform_.translation_.y <= 16.0f) { // あんまりにも上にいる時は跳ねさせない
 			isRising_ = true;
 			riseStartY_ = worldTransform_.translation_.y;
 			riseEndY_ = riseStartY_ + 3.5f; // 3.5上に上昇
@@ -365,6 +405,43 @@ void Player::Draw(ViewProjection& viewProjection) {
 
 	// 一旦常に描画
 	modelLaser_->Draw(anticWorldTransform_, viewProjection);
+}
+
+void Player::DrawUI() {
+	///
+	///	左上の残りHP（ハート）の描画
+	/// 
+	
+	for (int32_t i = 0; i < hp_; i++) {
+		heartSprites_[i]->Draw();
+	}
+
+	///
+	///	左上の現在スコアの描画
+	/// 
+
+	int32_t scoreDigit[6]; // 各桁の数字を格納
+	int32_t scoreTemp = score_; // 現在スコアを一時的に保存
+
+	// scoreDigitに現在スコアを格納
+	for (int32_t i = 0; i < kMaxScoreDigit; i++) {
+		scoreDigit[i] = scoreTemp % 10;
+		scoreTemp /= 10;
+	}
+
+	// スコアの表示位置（左上）
+	Vector2 scorePosition = {96.0f, 110.0f}; // ちょうど中央にくるいい感じの位置
+
+	// スコアを6桁表示
+	for (int32_t i = 0; i < kMaxScoreDigit; i++) {
+		// 各桁の位置を計算
+		Vector2 digitPosition = scorePosition + Vector2{static_cast<float>(i) * (21.0f + 3.0f), 0.0f}; // 21.0fは数字のサイズ。ちょっと間隔を開ける
+		// 読み込んだテクスチャから適切な数字を抜き取る
+		spriteScore_[i]->SetTextureRect({0.0f + (scoreDigit[5 - i] * 50.0f), 0.0f}, {50.0f, 65.0f});
+		spriteScore_[i]->SetPosition(digitPosition);
+		spriteScore_[i]->Draw();
+	}
+
 }
 
 void Player::Debug() { 
