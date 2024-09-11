@@ -646,7 +646,7 @@ void GameScene::GameSceneFlow() {
 	// 残り時間をセット
 	if (gameTime_ == SecToFrame(5)) {
 		// 残り時間（このWAVEで使う時間(frame))を設定
-		remainingTime_ = 1800 + 600; // 何もしない時間も含める
+		//remainingTime_ = 1800 + 600; // 何もしない時間も含める
 	}
 
 	///
