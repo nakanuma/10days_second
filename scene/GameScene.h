@@ -176,6 +176,15 @@ private: // メンバ変数
 	// 空っぽの星に使用するスプライト（3つ）
 	Sprite* spriteEmptyStar_[3];
 
+	/*残り時間表示*/
+
+	// そのWAVEが何フレームあるかを記録（毎WAVEリセット時にセットする）
+	int32_t remainingTime_ = 0; // テスト用で一旦30秒にしておく
+	// 残り時間表示に使用するスプライト（2桁分）
+	Sprite* spriteRemainingTime_[2];
+	// "残り・・・秒"と書いてあるスプライト
+	Sprite* spriteRemainingTimeText_ = nullptr;
+
 	///
 	///	その他
 	/// 

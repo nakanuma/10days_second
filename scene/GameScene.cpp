@@ -70,6 +70,12 @@ GameScene::~GameScene() {
 	for (int32_t i = 0; i < kMaxStarNum; i++) {
 		delete spriteEmptyStar_[i];
 	}
+
+	for (int32_t i = 0; i < 2; i++) {
+		delete spriteRemainingTime_[i];
+	}
+
+	delete spriteRemainingTimeText_;
 }
 
 void GameScene::Initialize() {
@@ -161,6 +167,17 @@ void GameScene::Initialize() {
 		spriteEmptyStar_[i]->SetAnchorPoint({0.5f, 0.5f}); // アンカーポイントを中心に設定
 	}
 
+	// "残り・・・秒"と書いてあるスプライト
+	uint32_t textureRemainingText = TextureManager::Load("images/game_time_nokori.png");
+	spriteRemainingTimeText_ = Sprite::Create(textureRemainingText, {175.0f, 360.0f}); // 左側の領域でのど真ん中
+	spriteRemainingTimeText_->SetAnchorPoint({0.5f, 0.5f});
+
+	// 残り時間（2桁分）
+	for (int32_t i = 0; i < 2; i++) {
+		spriteRemainingTime_[i] = Sprite::Create(textureNumber_, {0.0f, 0.0f});
+		spriteRemainingTime_[i]->SetSize({50.0f, 65.0f}); // 1文字分のサイズ
+	}
+
 	///
 	///	その他
 	/// 
@@ -217,6 +234,18 @@ void GameScene::Update() {
 	/// 
 
 	GameSceneFlow();
+
+	///
+	///	残り時間の管理（各WAVE開始時にそのWAVEの残り時間(f)を指定し、左側で表示するために使用）
+	/// 
+
+	// 残り時間が存在している場合、減らしていく
+	if (remainingTime_ > 0) {
+		remainingTime_--;
+	// 残り時間が無くなった場合、0で固定
+	} else {
+		remainingTime_ = 0;
+	}
 
 	///
 	///	全ての衝突判定を行う
@@ -342,6 +371,37 @@ void GameScene::Draw() {
 	spriteScreenLeft_->Draw();
 	// 右側
 	spriteScreenRight_->Draw();
+
+	///
+	///	残り時間の描画について
+	/// 
+
+	// "残り・・・秒"と書いてあるスプライト描画（これは常に描画）
+	spriteRemainingTimeText_->Draw();
+
+
+	// 動的に残り時間を管理
+	int32_t timeDigit[2]; // 
+	int32_t timeTemp = remainingTime_ / 60; // 残り時間を、フレーム->秒に変換
+
+	// timeDigitに現在残り時間を格納
+	for (int32_t i = 0; i < 2; i++) {
+		timeDigit[i] = timeTemp % 10;
+		timeTemp /= 10;
+	}
+	
+	// 残り時間の表示位置
+	Vector2 remainingTimePosition = {140.0f, 328.0f}; // "残り・・・秒"のスプライトの上にいい感じに配置
+
+	// 残り時間を2桁表示
+	for (int32_t i = 0; i < 2; i++) {
+		// 各桁の位置を計算
+		Vector2 timePosition = remainingTimePosition + Vector2{static_cast<float>(i) * (50.0f), 0.0f};
+		// 読み込んだテクスチャから適切な数字を抜き取る
+		spriteRemainingTime_[i]->SetTextureRect({0.0f + (timeDigit[1 - i] * 50.0f), 0.0f}, {50.0f, 65.0f});
+		spriteRemainingTime_[i]->SetPosition(timePosition);
+		spriteRemainingTime_[i]->Draw();
+	}
 
 	///
 	///	プレイヤーのUIを描画
@@ -581,6 +641,12 @@ void GameScene::GameSceneFlow() {
 
 	if (gameTime_ >= SecToFrame(0) && gameTime_ <= SecToFrame(5)) {
 		WaveSpriteMove();
+	}
+
+	// 残り時間をセット
+	if (gameTime_ == SecToFrame(5)) {
+		// 残り時間（このWAVEで使う時間(frame))を設定
+		remainingTime_ = 1800 + 600; // 何もしない時間も含める
 	}
 
 	///
