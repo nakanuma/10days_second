@@ -27,6 +27,8 @@ public:
 	void Update();
 	// 左スティックで左右移動・右スティックで角度変更・レーザー射撃状態によって自動で上昇下降・プレイヤーが範囲外へ行かないようにする処理
 	void Move();
+	// 予備動作の開始。これが呼ばれている間はプレイヤーの半径まで予備動作レーザーを拡大する
+	void StartAntic();
 	// RBでレーザーを発射・RBを押した瞬間に少し上に跳ねる処理
 	void Attack();
 	// 無敵状態中の処理（ダメージを受けた際）
@@ -115,6 +117,16 @@ private:
 	Laser laser_;
 	// モデル
 	Model* modelLaser_ = nullptr;
+
+
+	/* 予備動作に使用 */
+
+	// 予備動作用ワールドトランスフォーム
+	WorldTransform anticWorldTransform_;
+	// 予備動作が終了したか
+	bool endAntic_ = false;
+	// 予備動作タイマー（予備動作レーザーの拡大が開始する時間を決める）
+	uint32_t anticTimer_ = 0;
 
 	///
 	///	その他パラメーターなど（ImGuiでの調整項目）

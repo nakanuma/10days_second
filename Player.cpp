@@ -59,11 +59,22 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 	currentDescendingSpeed_ = 0.0f;
 
 	///
-	///	レーザー関連の初期化
+	///	予備動作レーザー関連の初期化
 	/// 
 	
+	// モデルを設定
 	assert(modelLaser);
 	modelLaser_ = modelLaser;
+
+	anticWorldTransform_.Initialize();
+	
+	Vector3 offset{0.0f, Laser::kLength, 0.0f};
+	anticWorldTransform_.translation_ = worldTransform_.translation_ + offset; // プレイヤーの座標 + オフセット
+	anticWorldTransform_.rotation_ = {0.0f, 0.0f, 1.57f}; // 最初は右向きなので上向きにする
+	anticWorldTransform_.scale_ = {Laser::kLength, 0.05f, 0.05f}; // 初期スケール
+
+	// ワールドトランスフォームを更新しておく
+	anticWorldTransform_.UpdateMatrix();
 }
 
 void Player::Update() {
@@ -82,6 +93,18 @@ void Player::Update() {
 	Attack();
 
 	///
+	///	予備動作レーザーの更新
+	///		
+
+	// 通常レーザーと予備動作レーザーの位置と回転角を一致させる
+	Vector3 offset = {Laser::kLength + 1.5f, 0.0f, 0.0f};
+	Vector3 rot = worldTransform_.rotation_;
+	offset = Vector3::Transform(offset, Matrix4x4::MakeRotateXYZ(rot.x, rot.y, rot.z));
+
+	anticWorldTransform_.translation_ = worldTransform_.translation_ + offset;
+	anticWorldTransform_.rotation_ = worldTransform_.rotation_;
+
+	///
 	///	無敵時間中（ダメージを受けた後）に行う処理
 	/// 
 
@@ -92,6 +115,7 @@ void Player::Update() {
 	/// 
 	
 	worldTransform_.UpdateMatrix();
+	anticWorldTransform_.UpdateMatrix();
 
 	///
 	///	デバッグ表示
@@ -210,6 +234,27 @@ void Player::Move() {
 	}
 }
 
+void Player::StartAntic() {
+	// 予備動作レーザーの拡大にかける時間
+	const float kAnticDuration = 20.0f; // フレーム数を設定
+
+	// 進行度を0.0 ~ 1.0fの範囲で計算
+	if (anticTimer_++ >= 20) {                                // 地面に到達して指定フレームしたら開始
+		float progress = (anticTimer_ - 20) / kAnticDuration; // 指定フレーム後からスタート
+		progress = (std::min)(progress, 1.0f);                // 進行度が1.0を超えないように
+
+		// EaseInQuad関数で拡大率を計算
+		float scale = Easing::EaseOutQuart(progress) * (kRadius_ - 0.05f) + 0.05f; // 初期スケールYが0.05であるため、0.05から始まるよう調整
+		anticWorldTransform_.scale_.y = scale;
+		anticWorldTransform_.scale_.z = scale;
+	}
+
+	// 予備動作が終了したかを確認
+	if (anticWorldTransform_.scale_.y >= kRadius_) {
+		endAntic_ = true; // 予備動作終了
+	}
+}
+
 void Player::Attack() {
 	// ゲームパッド状態取得
 	XINPUT_STATE joyState;
@@ -233,6 +278,12 @@ void Player::Attack() {
 		);
 
 		///
+		///	押されている間は予備動作レーザーを更新
+		/// 
+
+		StartAntic();
+
+		///
 		/// RBが押された瞬間（前フレームで押されていなかった場合）のみ、プレイヤーを上に跳ねさせる
 		/// 
 		if (!wasLaserButtonPressed_ && !isRising_) {
@@ -245,10 +296,15 @@ void Player::Attack() {
 	// 押していない場合はレーザーを無効化
 	} else {
 		laser_.SetActive(false);
+
+		// 予備動作レーザーの情報を初期状態にリセット
+		anticWorldTransform_.scale_ = {Laser::kLength, 0.05f, 0.05f};
+		anticTimer_ = 0;
+		endAntic_ = false;
 	}
 
-	// 有効な場合、レーザーを更新
-	if (laser_.IsActive()) {
+	// 有効な場合かつ予備動作が終わった場合、レーザーを更新
+	if (laser_.IsActive() && endAntic_) {
 		laser_.Update(worldTransform_.translation_, worldTransform_.rotation_);
 	}
 
@@ -298,10 +354,17 @@ void Player::Draw(ViewProjection& viewProjection) {
 	///	レーザーの描画
 	/// 
 	
-	// 有効な場合のみ描画
-	if (laser_.IsActive()) {
+	// 有効な場合かつ予備動作が終わった場合のみ描画
+	if (laser_.IsActive() && endAntic_) {
 		laser_.Draw(viewProjection);
 	}
+
+	///
+	///	予備動作レーザーの描画
+	/// 
+
+	// 一旦常に描画
+	modelLaser_->Draw(anticWorldTransform_, viewProjection);
 }
 
 void Player::Debug() { 
