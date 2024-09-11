@@ -51,6 +51,9 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 	// レーザーを撃つ際のボタンが押されたかの初期化（RBが押された瞬間のみプレイヤーを跳ねさせる処理に使用）
 	wasLaserButtonPressed_ = false;
 
+	// 生存フラグの初期化
+	isAlive_ = true;
+
 	// レーザー射撃中/非射撃中の自動上昇・下降の速度の初期値を設定（ImGuiでいじれるように）
 	autoAscendingSpeed_ = 0.1f;
 	autoDescendingSpeed_ = 0.15f;
@@ -68,34 +71,40 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 
 void Player::Update() {
 	///
-	///	移動
-	/// 
+	/// 移動
+	///
 
 	// 左スティックで移動 & 移動している方向へ向ける
 	Move();
 
 	///
-	///	攻撃
-	///		
+	/// 攻撃
+	///
 
 	// RBでレーザーを発射
 	Attack();
 
 	///
-	///	無敵時間中（ダメージを受けた後）に行う処理
-	/// 
+	/// 無敵時間中（ダメージを受けた後）に行う処理
+	///
 
 	Invincible();
 
 	///
-	///	行列の更新
-	/// 
+	/// 生存確認
+	///
+	
+	CheckIsAlive();
+
+	///
+	/// 行列の更新
+	///
 	
 	worldTransform_.UpdateMatrix();
 
 	///
-	///	デバッグ表示
-	/// 
+	/// デバッグ表示
+	///
 	
 	Debug();
 }
@@ -276,6 +285,13 @@ void Player::OnCollision() {
 		isInvincible_ = true;
 		// 無敵カウントに無敵時間をセット
 		invincibleCount_ = kInvincibleTime_;
+	}
+}
+
+void Player::CheckIsAlive() {
+	// もしHPが0になったらフラグをfalseにする
+	if (hp_ <= 0) {
+		isAlive_ = false;
 	}
 }
 
