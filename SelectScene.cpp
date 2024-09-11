@@ -27,6 +27,12 @@ void SelectScene::Initialize() {
 	// ビュープロジェクションの初期化
 	viewProjection_.Initialize();
 
+	// ゲームシーン
+	gameScene_ = std::make_unique<GameScene>();
+
+	// ウェーブ管理
+	wave_ = std::make_unique<Wave>();
+
 	// 初期ステージ
 	stage_ = Stage::kFirst;
 
@@ -74,8 +80,6 @@ void SelectScene::Initialize() {
 	boxModel_[1].reset(Model::CreateFromOBJ("select_box_2", true));
 	boxModel_[2].reset(Model::CreateFromOBJ("select_box_3", true));
 
-
-	// フェード
 	// フェード
 	fade_ = std::make_unique<Fade>();
 
@@ -93,10 +97,11 @@ void SelectScene::Update() {
 		}
 		break;
 	case Phase::kMain:
+		// 操作
 		Operation();
 		break;
 	case Phase::kFadeOut:
-		
+
 		if (fade_->IsFinished()) {
 			isFinished_ = true;
 		}
@@ -112,9 +117,6 @@ void SelectScene::Update() {
 
 	// パーティクルの自動生成
 	ParticleGeneration();
-
-	// ステージボックス配置
-	BoxArrangement();
 
 	for (int i = 0; i < 3; i++) {
 		boxWorldTransform_[i].UpdateMatrix();
@@ -199,57 +201,9 @@ void SelectScene::Draw() {
 #pragma endregion
 }
 
-void SelectScene::Debug() {
-
-	ImGui::Begin("SelectBox");
-
-	ImGui::DragFloat3("box1Trans", &boxWorldTransform_[0].translation_.x, 0.1f);
-	ImGui::DragFloat3("box2Trans", &boxWorldTransform_[1].translation_.x, 0.1f);
-	ImGui::DragFloat3("box3Trans", &boxWorldTransform_[2].translation_.x, 0.1f);
-
-	ImGui::DragFloat3("box1Rot", &boxWorldTransform_[0].rotation_.x, 0.01f);
-	ImGui::DragFloat3("box2Rot", &boxWorldTransform_[1].rotation_.x, 0.01f);
-	ImGui::DragFloat3("box3Rot", &boxWorldTransform_[2].rotation_.x, 0.01f);
-
-	ImGui::End();
-}
+void SelectScene::Debug() {}
 
 void SelectScene::Operation() {
-
-	XINPUT_STATE joyState;
-
-	XINPUT_STATE joyPreState;
-
-	// ゲームパッド未接続なら何もせず抜ける
-	if (!Input::GetInstance()->GetJoystickState(0, joyState)) {
-		return;
-	}
-
-	if (!Input::GetInstance()->GetJoystickStatePrevious(0, joyPreState)) {
-		return;
-	}
-
-	// Aボタンを押したら選択
-	if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_A) {
-		if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
-			// 終了フラグをtrue
-			// isFinished_ = true;
-			// フェード切り替え
-			phase_ = Phase::kFadeOut;
-			fade_->Start(Fade::Status::FadeOut, fadeTimer_);
-		}
-	}
-
-	// Xボタンを押したら終了
-	if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_X) {
-		if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_X)) {
-			// 終了フラグをtrue
-			isTitleSelect_ = true;
-		}
-	}
-}
-
-void SelectScene::BoxArrangement() {
 
 	XINPUT_STATE joyState;
 
@@ -272,10 +226,23 @@ void SelectScene::BoxArrangement() {
 				stage_ = Stage::kSeconsd;
 				for (int i = 0; i < 3; i++) {
 					boxWorldTransform_[i].translation_.x -= 15.0f;
-					boxWorldTransform_[i].translation_.y = 0.0f;
 				}
 			}
 		}
+
+		// Aボタンを押したら選択
+		if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_A) {
+			if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
+				// フェード切り替え
+				phase_ = Phase::kFadeOut;
+				fade_->Start(Fade::Status::FadeOut, fadeTimer_);
+
+				Wave::GetInstance().SetWave(1);
+			}
+		}
+
+		boxWorldTransform_[1].translation_.y = 0.0f;
+		boxWorldTransform_[2].translation_.y = 0.0f;
 
 		MoveBox(&boxWorldTransform_[0]);
 		break;
@@ -286,7 +253,6 @@ void SelectScene::BoxArrangement() {
 				stage_ = Stage::kFirst;
 				for (int i = 0; i < 3; i++) {
 					boxWorldTransform_[i].translation_.x += 15.0f;
-					boxWorldTransform_[i].translation_.y = 0.0f;
 				}
 			}
 		}
@@ -296,10 +262,23 @@ void SelectScene::BoxArrangement() {
 				stage_ = Stage::kThird;
 				for (int i = 0; i < 3; i++) {
 					boxWorldTransform_[i].translation_.x -= 15.0f;
-					boxWorldTransform_[i].translation_.y = 0.0f;
 				}
 			}
 		}
+
+		// Aボタンを押したら選択
+		if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_A) {
+			if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
+				// フェード切り替え
+				phase_ = Phase::kFadeOut;
+				fade_->Start(Fade::Status::FadeOut, fadeTimer_);
+
+				Wave::GetInstance().SetWave(2);
+			}
+		}
+
+		boxWorldTransform_[0].translation_.y = 0.0f;
+		boxWorldTransform_[2].translation_.y = 0.0f;
 
 		MoveBox(&boxWorldTransform_[1]);
 		break;
@@ -310,15 +289,36 @@ void SelectScene::BoxArrangement() {
 				stage_ = Stage::kSeconsd;
 				for (int i = 0; i < 3; i++) {
 					boxWorldTransform_[i].translation_.x += 15.0f;
-					boxWorldTransform_[i].translation_.y = 0.0f;
 				}
 			}
 		}
+
+		// Aボタンを押したら選択
+		if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_A) {
+			if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
+				// フェード切り替え
+				phase_ = Phase::kFadeOut;
+				fade_->Start(Fade::Status::FadeOut, fadeTimer_);
+
+				Wave::GetInstance().SetWave(3);
+			}
+		}
+
+		boxWorldTransform_[0].translation_.y = 0.0f;
+		boxWorldTransform_[1].translation_.y = 0.0f;
 
 		MoveBox(&boxWorldTransform_[2]);
 		break;
 	default:
 		break;
+	}
+
+	// Xボタンを押したらタイトルへ
+	if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_X) {
+		if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_X)) {
+			// タイトルセレクトをtrueに
+			isTitleSelect_ = true;
+		}
 	}
 }
 
@@ -339,8 +339,9 @@ void SelectScene::ParticleGeneration() {
 		std::mt19937 rng(rd());
 
 		// X座標。指定範囲の間をランダムで生成
-		const float kGenerateX = 1280;
-		std::uniform_real_distribution<float> distX(0, kGenerateX);
+		const float kRightGenerateX = 350;
+		const float kLeftGenerateX = 930;
+		std::uniform_real_distribution<float> distX(kRightGenerateX, kLeftGenerateX);
 		// 指定範囲のランダムなX座標を生成
 		float randomX = distX(rng);
 

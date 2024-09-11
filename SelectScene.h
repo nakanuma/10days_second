@@ -7,12 +7,17 @@
 #include "ViewProjection.h"
 #include "WorldTransform.h"
 
+#include "GameScene.h"
 #include "Particle.h"
 #include "Fade.h"
+#include "Wave.h"
 
 #include <ImGui.h>
 #include <list>
 #include <memory>
+
+class GameScene;
+class Wave;
 
 class SelectScene {
 
@@ -43,9 +48,6 @@ public:
 	// 操作
 	void Operation();
 
-	// ステージボックス配置
-	void BoxArrangement();
-
 	// パーティクルの自動生成
 	void ParticleGeneration();
 
@@ -57,15 +59,29 @@ public:
 	bool GetIsSelectTitle();
 
 private: // メンバ変数
+	// DirectX
 	DirectXCommon* dxCommon_ = nullptr;
 
 	// ビュープロジェクション
 	ViewProjection viewProjection_;
 
+	// ゲームシーン
+	std::unique_ptr<GameScene> gameScene_ = nullptr;
+
+	// ウェーブ管理
+	std::unique_ptr<Wave> wave_ = nullptr;
+
+	/*==================================================================================*/
+	// フラグ
+
 	// 終了フラグ
 	bool isFinished_ = false;
 	// タイトルセレクト
 	bool isTitleSelect_ = false;
+
+
+	/*==================================================================================*/
+	// フェード関連
 
 	// フェード
 	std::unique_ptr<Fade> fade_ = nullptr;
@@ -73,14 +89,18 @@ private: // メンバ変数
 	Phase phase_ = Phase::kFadeIn;
 
 	// フェードタイマー
-	const float fadeTimer_ = 2.0f;
+	const float fadeTimer_ = 1.0f;
+
+
+	/*==================================================================================*/
+	// パーティクル
 
 	// パーティクルのリスト
 	std::list<Particle*> particles_;
 
-	///
-	/// テクスチャハンドル
-	///
+
+	/*==================================================================================*/
+	// テクスチャハンドル
 
 	// 背景
 	uint32_t bgTex_ = 0;
@@ -98,9 +118,8 @@ private: // メンバ変数
 	uint32_t titleSelectTex_ = 0;
 
 
-	///
-	/// スプライト
-	///
+	/*==================================================================================*/
+	// スプライト
 
 	// 背景
 	std::unique_ptr<Sprite> bgSprite_ = nullptr;
@@ -118,27 +137,15 @@ private: // メンバ変数
 	std::unique_ptr<Sprite> titleSelectSprite_ = nullptr;
 
 
-	///
-	/// スプライト座標
-	///
-
-	// 背景
-	Vector2 bgPos_ = {};
-	// スタートボタン
-	Vector2 startButtonPos_ = {};
-
-
-	///
-	/// ワールドトランスフォーム
-	///
+	/*==================================================================================*/
+	// ワールドトランスフォーム
 
 	// ボックス
 	WorldTransform boxWorldTransform_[3];
 
 
-	///
-	/// モデル
-	///
+	/*==================================================================================*/
+	// モデル
 
 	// ボックス
 	std::unique_ptr<Model> boxModel_[3];

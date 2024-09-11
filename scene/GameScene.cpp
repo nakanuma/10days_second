@@ -40,6 +40,11 @@ GameScene::~GameScene() {
 		delete mark;
 	}
 
+	// パーティクルをすべて開放
+	for (Particle* particle : particles_) {
+		delete particle;
+	}
+
 	///
 	///	レーザー
 	///
@@ -49,8 +54,8 @@ GameScene::~GameScene() {
 
 	///
 	///	スプライト
-	/// 
-	
+	///
+
 	delete spriteWaveNum_;
 
 	delete spriteBackGround_;
@@ -71,6 +76,9 @@ void GameScene::Initialize() {
 
 	// ビュープロジェクション初期化
 	viewProjection_.Initialize();
+
+	// ウェーブ管理
+	wave_ = std::make_unique<Wave>();
 
 	///
 	///	レーザー
@@ -102,9 +110,8 @@ void GameScene::Initialize() {
 
 	///
 	///	スプライト生成
-	/// 
-	uint32_t textureWhite1x1 = TextureManager::Load("white1x1.png");
-
+	///
+	uint32_t textureWhite1x1 = TextureManager::Load("./Resources/images/title/back_white.png");
 
 	/* 各ウェーブ開始時に出てくるウェーブの文字（1, 2, 3のテクスチャハンドルをセットして使い回す）*/
 	wave1TextureHandle_ = TextureManager::Load("images/wave1.png");
@@ -129,7 +136,7 @@ void GameScene::Initialize() {
 	// リザルトの最も後ろの背景（拡縮するやつ）
 	spriteResultBackGround_ = Sprite::Create(textureWhite1x1, {640.0f, 360.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
 	spriteResultBackGround_->SetAnchorPoint({0.5f, 0.5f}); // アンカーポイントを中心に設定
-	spriteResultBackGround_->SetSize({0.0f, 520.0f}); // 最初はXのサイズ0で生成。最大サイズは480
+	spriteResultBackGround_->SetSize({0.0f, 520.0f});      // 最初はXのサイズ0で生成。最大サイズは480
 
 	// 「リザルト」文字
 	uint32_t textureResultText = TextureManager::Load("images/resultText.png");
@@ -140,81 +147,140 @@ void GameScene::Initialize() {
 	///	その他
 	///
 
+	// 初期ウェーブ
+	int wave = Wave::GetInstance().GetWave();
+
 	// ゲームシーン経過時間の初期化
-	gameTime_ = 0;
+	// gameTime_ = 0;
+
+	// ウェーブの値によって開始ウェーブが異なる
+	if (wave == 1) {
+		// ウェーブ1の開始時間をセット
+		gameTime_ = SecToFrame(0);
+	} else if (wave == 2) {
+		// ウェーブ2の開始時間をセット
+		gameTime_ = SecToFrame(50);
+	} else {
+		// ウェーブの開始時間をセット
+		gameTime_ = SecToFrame(100);
+	}
+
+	///
+	/// 画面遷移(フェード)関連
+	///
+
+	fade_ = std::make_unique<Fade>();
+
+	fade_->Initialize();
+
+	fade_->Start(Fade::Status::FadeIn, fadeTimer_);
 }
 
 void GameScene::Update() {
-	///
-	///	プレイヤー更新
-	///
 
-	player_->Update();
+	switch (phase_) {
+	case Phase::kFadeIn:
+		if (fade_->IsFinished()) {
+			phase_ = Phase::kMain;
+		}
+		///
+		///	プレイヤー更新
+		///
 
-	///
-	///	敵関連の更新
-	/// 
+		player_->Update();
+		break;
+	case Phase::kMain:
+		///
+		///	プレイヤー更新
+		///
 
-	// 敵全て
-	for (Enemy* enemy : enemies_) {
-		enemy->Update();
+		player_->Update();
 
-		// 空中にいる敵が死んだ際、プレイヤーにスコアを100与える
-		if (enemy->IsDead() && !enemy->HasReachedBottom()) {
-			player_->AddScore(100);
+		///
+		///	敵関連の更新
+		///
+
+		// 敵全て
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
+
+			// 空中にいる敵が死んだ際、プレイヤーにスコアを100与える
+			if (enemy->IsDead() && !enemy->HasReachedBottom()) {
+				player_->AddScore(100);
+			}
+		}
+		// 死んだ敵をリストから削除
+		enemies_.remove_if([](Enemy* enemy) {
+			if (enemy->IsDead()) {
+				delete enemy;
+				return true;
+			}
+			return false;
+		});
+
+		// 敵出現マーク全て
+		for (EnemyAppearMark* mark : enemyAppearMarks_) {
+			mark->Update();
+		}
+		// 死んだマークをリストから削除
+		enemyAppearMarks_.remove_if([](EnemyAppearMark* mark) {
+			if (mark->IsDead()) {
+				delete mark;
+				return true;
+			}
+			return false;
+		});
+
+		// パーティクルの更新
+		for (Particle* particle : particles_) {
+			particle->Update();
 		}
 
+		///
+		/// プレイヤーの生存確認
+		///
+
+		CheckPlayerAlive();
+
+		///
+		/// パーティクルの自動生成
+		///
+		///
+
+		ParticleGeneration();
+
+		///
+		/// ゲームシーン全ての流れの処理
+		///
+
+		GameSceneFlow();
+
+		///
+		///	全ての衝突判定を行う
+		///
+
+		CheckAllCollision();
+
+		/// ゲームシーン経過時間をカウント
+		gameTime_++;
+
+		break;
+	case Phase::kFadeOut:
+
+		if (fade_->IsFinished()) {
+			isFinished_ = true;
+		}
+		break;
 	}
-	// 死んだ敵をリストから削除
-	enemies_.remove_if([](Enemy* enemy) {
-		if (enemy->IsDead()) {
-			delete enemy;
-			return true;
-		}
-		return false;
-	});
 
-	// 敵出現マーク全て
-	for (EnemyAppearMark* mark : enemyAppearMarks_) {
-		mark->Update();
-	}
-	// 死んだマークをリストから削除
-	enemyAppearMarks_.remove_if([](EnemyAppearMark* mark) {
-		if (mark->IsDead()) {
-			delete mark;
-			return true;
-		}
-		return false;
-	});
-
-	///
-	/// ゲームシーン全ての流れの処理
-	/// 
-
-	GameSceneFlow();
-
-	///
-	///	全ての衝突判定を行う
-	///
-
-	CheckAllCollision();
-
-
-	///
-	///	リセット
-	///
-
-	// メモリリーク起こすから一旦コメントアウト
-	// Reset();
+	// フェードの更新
+	fade_->Update();
 
 	///
 	///	デバッグ情報
 	///
 
-	// Debug();
-
-	/// ゲームシーン経過時間をカウント
-	gameTime_++;
+	Debug();
 }
 
 void GameScene::Draw() {
@@ -232,6 +298,10 @@ void GameScene::Draw() {
 
 	/* ゲーム背景の描画 */
 	spriteBackGround_->Draw();
+	// パーティクルの描画
+	for (Particle* particle : particles_) {
+		particle->Draw();
+	}
 
 	// スプライト描画後処理
 	Sprite::PostDraw();
@@ -257,8 +327,8 @@ void GameScene::Draw() {
 
 	///
 	///	敵関連の描画
-	/// 
-	
+	///
+
 	// 敵全て
 	for (Enemy* enemy : enemies_) {
 		// レーザーの描画
@@ -285,13 +355,13 @@ void GameScene::Draw() {
 
 	///
 	///	各ウェーブ開始時に、右から左へ出てくるウェーブ数の書いたスプライトの描画
-	/// 
+	///
 
 	spriteWaveNum_->Draw();
 
 	///
 	///	リザルト関連の描画
-	/// 
+	///
 
 	// リザルト表示時の最も後ろのスプライト描画（リザルト表示の最も奥に配置する必要）
 	spriteResultBackGround_->Draw();
@@ -299,22 +369,23 @@ void GameScene::Draw() {
 	// リザルトの最も後ろのスプライトが最大横幅になるまでのフレーム
 	const int32_t adjust = 30;
 	// リザルト表示のタイミングかつ、リザルト背景が最大になっている間のみ描画
-	if (gameTime_ >= SecToFrame(45) + adjust && gameTime_ <= SecToFrame(50) - adjust || 
-		gameTime_ >= SecToFrame(95) + adjust && gameTime_ <= SecToFrame(100) - adjust ||
-	    gameTime_ >= SecToFrame(145) + adjust && gameTime_ <= SecToFrame(150) - adjust
-		) {
+	if (gameTime_ >= SecToFrame(45) + adjust && gameTime_ <= SecToFrame(50) - adjust || gameTime_ >= SecToFrame(95) + adjust && gameTime_ <= SecToFrame(100) - adjust ||
+	    gameTime_ >= SecToFrame(145) + adjust && gameTime_ <= SecToFrame(150) - adjust) {
 		// 「リザルト」と書かれた文字描画
 		spriteResultText_->Draw();
 	}
 
 	///
 	///	ゲーム領域ではない画面両側を隠すスプライトの描画（これが一番手前にあるべき）
-	/// 
+	///
 
 	// 左側
 	spriteScreenLeft_->Draw();
 	// 右側
 	spriteScreenRight_->Draw();
+
+	// フェード
+	fade_->Draw();
 
 	// スプライト描画後処理
 	Sprite::PostDraw();
@@ -323,21 +394,34 @@ void GameScene::Draw() {
 }
 
 void GameScene::Debug() {
+#ifdef _DEBUG
+
 	ImGui::Begin("GameScene");
 
 	//// 敵を出現させる
-	//if (ImGui::Button("EnemySpawn")) {
+	// if (ImGui::Button("EnemySpawn")) {
 	//	Enemy* newEnemy = new Enemy();
 	//	newEnemy->Initialize(modelEnemy_, modelLaser_, {4.0f, 12.0f, 0.0f});
 
 	//	enemies_.push_back(newEnemy);
-	//} 
+	//}
 
 	// ゲームシーン経過時間を表示
 	ImGui::Text("GameTime : %d", gameTime_);
 	ImGui::DragInt("GameTime", &gameTime_);
 
 	ImGui::End();
+
+#endif
+}
+
+void GameScene::CheckPlayerAlive() {
+
+	if (!player_->IsAlive()) {
+		// フェード切り替え
+		phase_ = Phase::kFadeOut;
+		fade_->Start(Fade::Status::FadeOut, fadeTimer_);
+	}
 }
 
 void GameScene::CheckAllCollision() {
@@ -476,7 +560,7 @@ void GameScene::EnemyGeneration() {
 
 	///
 	///	生成時の半径について
-	/// 
+	///
 
 	// 敵の半径を決定するための確率
 	std::uniform_real_distribution<float> distProbability(0.0f, 1.0f);
@@ -488,7 +572,7 @@ void GameScene::EnemyGeneration() {
 	if (randomProbability < 0.2f) {
 		std::uniform_real_distribution<float> distRadiusLarge(2.0f, 2.5f);
 		randomRadius = distRadiusLarge(rng);
-	// 80％の確率で小さい敵（半径1.0f ~ 1.5f）が生成
+		// 80％の確率で小さい敵（半径1.0f ~ 1.5f）が生成
 	} else {
 		std::uniform_real_distribution<float> distRadiusSmall(1.0f, 1.5f);
 		randomRadius = distRadiusSmall(rng);
@@ -506,8 +590,8 @@ void GameScene::EnemyGeneration() {
 
 	///
 	///	実際に敵の生成を行う & 敵出現マークの生成も行う
-	/// 
-	
+	///
+
 	// 敵出現マークのY座標（一律で固定）
 	const float kEnemyAppearMarkY = 14.0f;
 
@@ -519,8 +603,8 @@ void GameScene::EnemyGeneration() {
 
 		///
 		///	敵出現マークの生成
-		///		
-		
+		///
+
 		EnemyAppearMark* newMark = new EnemyAppearMark();
 		newMark->Initialize(modelEnemyAppearMark_, {randomX, kEnemyAppearMarkY, 0.0f}); // 敵と同じX座標を指定
 
@@ -528,10 +612,45 @@ void GameScene::EnemyGeneration() {
 	}
 }
 
+void GameScene::ParticleGeneration() {
+
+	// フレームカウンタを保持する静的変数
+	static int frameCounter = 0;
+
+	// フレームカウンタを増加
+	frameCounter++;
+
+	// 5フレームごとにパーティクルを生成
+	if (frameCounter % 20 == 0) {
+		///
+		/// パーティクル生成のX座標ランダム化
+		///
+		std::random_device rd;
+		std::mt19937 rng(rd());
+
+		// X座標。指定範囲の間をランダムで生成
+		const float kRightGenerateX = 350;
+		const float kLeftGenerateX = 930;
+		std::uniform_real_distribution<float> distX(kRightGenerateX, kLeftGenerateX);
+		// 指定範囲のランダムなX座標を生成
+		float randomX = distX(rng);
+
+		// Y座標。固定（800で生成）
+		const float kGenerateY = 800.0f;
+
+		// パーティクルの座標を設定
+		Particle* newParticle = new Particle();
+		newParticle->Initialize({randomX, kGenerateY});
+
+		// パーティクルリストに追加
+		particles_.push_back(newParticle);
+	}
+}
+
 void GameScene::GameSceneFlow() {
 	///
 	/// 0~5秒 : WAVE1表示スプライトを右から左へ
-	/// 
+	///
 
 	if (gameTime_ >= SecToFrame(0) && gameTime_ <= SecToFrame(5)) {
 		WaveSpriteMove();
@@ -539,7 +658,7 @@ void GameScene::GameSceneFlow() {
 
 	///
 	///	5~35秒 : WAVE1用の敵を30秒間生成し続ける(まだ作ってないので、あとで各WAVEの敵生成用関数を作成する）
-	/// 
+	///
 
 	if (gameTime_ >= SecToFrame(5) && gameTime_ <= SecToFrame(35)) {
 		// 敵の自動生成を行う
@@ -548,11 +667,11 @@ void GameScene::GameSceneFlow() {
 
 	///
 	///	35~45秒 : 何もしない（WAVE1で湧いた敵が完全に消えるくらいの想定がこのくらい）
-	/// 
-	
+	///
+
 	///
 	///	45~50秒 : リザルトの表示
-	/// 
+	///
 
 	if (gameTime_ >= SecToFrame(45) && gameTime_ <= SecToFrame(50)) {
 		ShowResult();
@@ -572,8 +691,8 @@ void GameScene::GameSceneFlow() {
 
 	///
 	///	55~85秒 : WAVE2用の敵を30秒間生成し続ける
-	/// 
-	
+	///
+
 	if (gameTime_ >= SecToFrame(55) && gameTime_ <= SecToFrame(85)) {
 		// 敵の自動生成を行う
 		EnemyGeneration();
@@ -581,7 +700,7 @@ void GameScene::GameSceneFlow() {
 
 	///
 	///	85~95秒 : 何もしない（WAVE2で湧いた敵が完全に消えるくらいの想定がこのくらい）
-	/// 
+	///
 
 	///
 	///	95~100秒 : リザルトの表示
@@ -605,8 +724,8 @@ void GameScene::GameSceneFlow() {
 
 	///
 	///	105~135秒 : WAVE3用の敵を30秒間生成し続ける
-	/// 
-	
+	///
+
 	if (gameTime_ >= SecToFrame(105) && gameTime_ <= SecToFrame(135)) {
 		// 敵の自動生成を行う
 		EnemyGeneration();
@@ -615,13 +734,23 @@ void GameScene::GameSceneFlow() {
 	///
 	///	135~145秒 : 何もしない（WAVE3で湧いた敵が完全に消えるくらいの想定がこのくらい）
 	///
-	
+
 	///
 	///	145~150秒 : リザルトの表示
 	///
 
 	if (gameTime_ >= SecToFrame(145) && gameTime_ <= SecToFrame(150)) {
 		ShowResult();
+	}
+
+	///
+	///	150秒~ : 終了
+	///
+	
+	if (gameTime_ >= SecToFrame(150)) {
+		// フェード切り替え
+		phase_ = Phase::kFadeOut;
+		fade_->Start(Fade::Status::FadeOut, fadeTimer_);
 	}
 }
 
@@ -668,7 +797,7 @@ void GameScene::ShowResult() {
 	///
 	///	5秒かけてリザルト背景の拡縮
 	/// （0.5秒で拡大->4秒待機->0.5秒で拡縮）
-	/// 
+	///
 	{
 		// スプライトの初期サイズ
 		const float startSize = 0.0f;
@@ -707,6 +836,6 @@ void GameScene::ShowResult() {
 			spriteResultBackGround_->SetSize({startSize, 520.0f});
 		}
 	}
-
-
 }
+
+bool GameScene::GetIsFinished() { return isFinished_; }

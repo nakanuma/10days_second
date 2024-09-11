@@ -7,19 +7,12 @@
 #include "ViewProjection.h"
 #include "WorldTransform.h"
 
-#include "Particle.h"
 #include "Fade.h"
+#include "Particle.h"
 
 #include <ImGui.h>
 #include <list>
 #include <memory>
-
-// シーンのフェーズ
-enum class Phase {
-	kFadeIn,  // フェードイン
-	kMain,    // メイン部
-	kFadeOut, // フェードアウト
-};
 
 /// <summary>
 /// タイトルシーン
@@ -27,6 +20,12 @@ enum class Phase {
 class TitleScene {
 
 public:
+	// ゲームのフェーズ
+	enum class Phase {
+		kFadeIn,  // フェードイン
+		kMain,    // メイン部
+		kFadeOut, // フェードアウト
+	};
 
 	// デストラクタ
 	~TitleScene();
@@ -67,7 +66,7 @@ private: // メンバ変数
 	Phase phase_ = Phase::kFadeIn;
 
 	// フェードタイマー
-	const float fadeTimer_ = 2.0f;
+	const float fadeTimer_ = 1.0f;
 
 	// パーティクル
 	std::unique_ptr<Particle> particle_ = nullptr;

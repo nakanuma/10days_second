@@ -136,6 +136,17 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				titleScene->Initialize();
 			}
 			break;
+		case Scene::kGame:
+			if (gameScene->GetIsFinished()) {
+				// シーン変更
+				scene = Scene::kTitle;
+				// 旧シーンの開放
+				delete gameScene;
+				gameScene = nullptr;
+				// シーンの生成と初期化
+				titleScene = new TitleScene();
+				titleScene->Initialize();
+			}
 		}
 	};
 

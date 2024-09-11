@@ -11,11 +11,17 @@
 #include "WinApp.h"
 
 #include <list>
+#include <memory>
 
 // MyClass
 #include "Player.h"
+#include "Particle.h"
+#include "Wave.h"
 #include "Enemy.h"
 #include "EnemyAppearMark.h"
+#include "Fade.h"
+
+class Wave;
 
 /// <summary>
 /// ゲームシーン
@@ -23,6 +29,14 @@
 class GameScene {
 
 public: // メンバ関数
+
+	// ゲームのフェーズ
+	enum class Phase {
+		kFadeIn,  // フェードイン
+		kMain,    // メイン部
+		kFadeOut, // フェードアウト
+	};
+
 	/// <summary>
 	/// コンストクラタ
 	/// </summary>
@@ -54,6 +68,11 @@ public: // メンバ関数
 	void Debug();
 
 	/// <summary>
+	/// プレイヤーが生きているかの確認
+	/// </summary>
+	void CheckPlayerAlive();
+
+	/// <summary>
 	/// 全ての衝突判定
 	/// </summary>
 	void CheckAllCollision();
@@ -62,6 +81,11 @@ public: // メンバ関数
 	/// 敵の自動生成 && 敵出現マークの生成
 	/// </summary>
 	void EnemyGeneration();
+
+	/// <summary>
+	/// パーティクルの自動生成
+	/// </summary>
+	void ParticleGeneration();
 
 	/// <summary>
 	/// ゲームシーンでの経過時間による流れを全て記述
@@ -84,6 +108,11 @@ public: // メンバ関数
 	/// </summary>
 	int32_t SecToFrame(int32_t Second) { return Second * 60; }
 
+	/// <summary>
+	/// 終了フラグの取得
+	/// </summary>
+	bool GetIsFinished();
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -95,6 +124,20 @@ private: // メンバ変数
 	
 	// ビュープロジェクション
 	ViewProjection viewProjection_;
+
+	// ウェーブ管理
+	std::unique_ptr<Wave> wave_ = nullptr;
+
+	/*==================================================================================*/
+	// フェード関連
+
+	// フェード
+	std::unique_ptr<Fade> fade_ = nullptr;
+	// 現在のフェーズ
+	Phase phase_ = Phase::kFadeIn;
+
+	// フェードタイマー
+	const float fadeTimer_ = 1.0f;
 
 	///
 	///	プレイヤー関連
@@ -153,6 +196,10 @@ private: // メンバ変数
 	// 「リザルト」の文字が書いてあるスプライト
 	Sprite* spriteResultText_ = nullptr;
 
+
+	// パーティクルのリスト
+	std::list<Particle*> particles_;
+
 	///
 	///	その他
 	/// 
@@ -161,4 +208,7 @@ private: // メンバ変数
 	int32_t gameTime_;
 	// 敵の生成頻度(フレーム)
 	uint32_t nextGenerationFrame_;
+
+	// 終了フラグ
+	bool isFinished_ = false;
 };

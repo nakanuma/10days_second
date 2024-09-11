@@ -154,8 +154,9 @@ void TitleScene::ParticleGeneration() {
 		std::mt19937 rng(rd());
 
 		// X座標。指定範囲の間をランダムで生成
-		const float kGenerateX = 930;
-		std::uniform_real_distribution<float> distX(350, kGenerateX);
+		const float kRightGenerateX = 350;
+		const float kLeftGenerateX = 930;
+		std::uniform_real_distribution<float> distX(kRightGenerateX, kLeftGenerateX);
 		// 指定範囲のランダムなX座標を生成
 		float randomX = distX(rng);
 
