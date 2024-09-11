@@ -84,6 +84,11 @@ public: // メンバ関数
 	/// </summary>
 	int32_t SecToFrame(int32_t Second) { return Second * 60; }
 
+	/// <summary>
+	/// リザルト表示時に、取得スコアを描画
+	/// </summary>
+	void DrawScoreToResult();
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -146,12 +151,30 @@ private: // メンバ変数
 	Sprite* spriteScreenLeft_ = nullptr;
 	Sprite* spriteScreenRight_ = nullptr;
 
+	/*--------------------*/
 	/* リザルトで使用するもの */
+	/*--------------------*/
+
+	/*背景*/
 
 	// リザルトの最も後ろにあるスプライト（拡縮させるやつ）
 	Sprite* spriteResultBackGround_ = nullptr;
 	// 「リザルト」の文字が書いてあるスプライト
 	Sprite* spriteResultText_ = nullptr;
+
+	/*スコア表示*/
+
+	// スコアの桁数
+	const int32_t kMaxScoreDigit = 6;
+	// スコア表示に使用するスプライト（6桁分）
+	Sprite* spriteScore_[6];
+	// 0~9までの数字が書いてある数字テクスチャ
+	uint32_t textureNumber_;
+
+	/*星表示*/
+	const int32_t kMaxStarNum = 3;
+	// 空っぽの星に使用するスプライト（3つ）
+	Sprite* spriteEmptyStar_[3];
 
 	///
 	///	その他

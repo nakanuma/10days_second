@@ -60,6 +60,16 @@ GameScene::~GameScene() {
 
 	delete spriteResultBackGround_;
 	delete spriteResultText_;
+
+	/* スコア（6桁分） */
+	for (int32_t i = 0; i < kMaxScoreDigit; i++) {
+		delete spriteScore_[i];
+	}
+
+	/* 空っぽの星 */
+	for (int32_t i = 0; i < kMaxStarNum; i++) {
+		delete spriteEmptyStar_[i];
+	}
 }
 
 void GameScene::Initialize() {
@@ -107,9 +117,9 @@ void GameScene::Initialize() {
 
 
 	/* 各ウェーブ開始時に出てくるウェーブの文字（1, 2, 3のテクスチャハンドルをセットして使い回す）*/
-	wave1TextureHandle_ = TextureManager::Load("images/wave1.png");
-	wave2TextureHandle_ = TextureManager::Load("images/wave2.png");
-	wave3TextureHandle_ = TextureManager::Load("images/wave3.png");
+	wave1TextureHandle_ = TextureManager::Load("images/WAVE1.png");
+	wave2TextureHandle_ = TextureManager::Load("images/WAVE2.png");
+	wave3TextureHandle_ = TextureManager::Load("images/WAVE3.png");
 
 	spriteWaveNum_ = Sprite::Create(wave1TextureHandle_, {0.0f, 0.0f});
 	spriteWaveNum_->SetAnchorPoint({0.5f, 0.5f}); // アンカーポイントを中心に設定
@@ -127,20 +137,35 @@ void GameScene::Initialize() {
 	/* リザルト関連 */
 
 	// リザルトの最も後ろの背景（拡縮するやつ）
-	spriteResultBackGround_ = Sprite::Create(textureWhite1x1, {640.0f, 360.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
+	uint32_t textureResultBackGround = TextureManager::Load("images/clear_back.png");
+	spriteResultBackGround_ = Sprite::Create(textureResultBackGround, {640.0f, 360.0f}, {1.0f, 1.0f, 1.0f, 1.0f});
 	spriteResultBackGround_->SetAnchorPoint({0.5f, 0.5f}); // アンカーポイントを中心に設定
 	spriteResultBackGround_->SetSize({0.0f, 520.0f}); // 最初はXのサイズ0で生成。最大サイズは480
 
 	// 「リザルト」文字
-	uint32_t textureResultText = TextureManager::Load("images/resultText.png");
+	uint32_t textureResultText = TextureManager::Load("images/clear.png");
 	spriteResultText_ = Sprite::Create(textureResultText, {640.0f, 180.0f});
 	spriteResultText_->SetAnchorPoint({0.5f, 0.5f}); // アンカーポイントを中心に設定
+
+	// スコア（6桁分）
+	textureNumber_ = TextureManager::Load("images/number.png");
+	for (int32_t i = 0; i < kMaxScoreDigit; i++) {
+		spriteScore_[i] = Sprite::Create(textureNumber_, {0.0f, 0.0f});
+		spriteScore_[i]->SetSize({21.0f, 30.0f}); // 数字1文字分のサイズを指定
+	}
+
+	// 空っぽの星（3つ）
+	uint32_t textureEmptyStar = TextureManager::Load("images/star_empty.png");
+	for (int32_t i = 0; i < kMaxStarNum; i++) {
+		spriteEmptyStar_[i] = Sprite::Create(textureEmptyStar, {0.0f, 0.0f});
+		spriteEmptyStar_[i]->SetAnchorPoint({0.5f, 0.5f}); // アンカーポイントを中心に設定
+	}
 
 	///
 	///	その他
 	/// 
 	
-	// ゲームシーン経過時間の初期化
+	// ゲームシーン経過時間の初期化（基本は0にする）
 	gameTime_ = 0;
 }
 
@@ -293,8 +318,20 @@ void GameScene::Draw() {
 		gameTime_ >= SecToFrame(95) + adjust && gameTime_ <= SecToFrame(100) - adjust ||
 	    gameTime_ >= SecToFrame(145) + adjust && gameTime_ <= SecToFrame(150) - adjust
 		) {
-		// 「リザルト」と書かれた文字描画
+
+		/* "CLAER"と書かれた文字を描画 */
 		spriteResultText_->Draw();
+
+		/* そのWAVEで取得したスコアを描画 */
+		DrawScoreToResult();
+
+		/* 空っぽの星を描画 */
+		for (int32_t i = 0; i < kMaxStarNum; i++) {
+			// 位置を計算
+			Vector2 position = Vector2{640.0f - 120.0f, 330.0f} + Vector2{static_cast<float>(i) * 120.0f, 0.0f}; // アンカーポイントが中心なのでいい感じになるように
+			spriteEmptyStar_[i]->SetPosition(position);
+			spriteEmptyStar_[i]->Draw();
+		}
 	}
 
 	///
@@ -330,8 +367,11 @@ void GameScene::Debug() {
 	//} 
 
 	// ゲームシーン経過時間を表示
-	ImGui::Text("GameTime : %d", gameTime_);
 	ImGui::DragInt("GameTime", &gameTime_);
+
+	if (ImGui::Button("AddScore")) {
+		player_->AddScore(100);
+	}
 
 	ImGui::End();
 }
@@ -505,7 +545,7 @@ void GameScene::EnemyGeneration() {
 	/// 
 	
 	// 敵出現マークのY座標（一律で固定）
-	const float kEnemyAppearMarkY = 14.0f;
+	const float kEnemyAppearMarkY = 18.0f;
 
 	if (gameTime_ % nextGenerationFrame_ == 0) {
 		Enemy* newEnemy = new Enemy();
@@ -525,6 +565,16 @@ void GameScene::EnemyGeneration() {
 }
 
 void GameScene::GameSceneFlow() {
+	// ここで各項目リセット
+	if (gameTime_ == SecToFrame(0)) {
+		// プレイヤーのスコアをリセット
+		player_->ResetScore();
+		// プレイヤーのHPをリセット
+		player_->ResetHP();
+		// WAVE1でのパラメーター設定初期化を呼ぶ
+
+	}
+
 	///
 	/// 0~5秒 : WAVE1表示スプライトを右から左へ
 	/// 
@@ -558,6 +608,16 @@ void GameScene::GameSceneFlow() {
 	/*---ウェーブセレクトで2を選択したらここへ飛ばす---*/
 	/*------------------------------------------*/
 
+	// ここで各項目リセット
+	if (gameTime_ == SecToFrame(50)) {
+		// プレイヤーのスコアをリセット
+		player_->ResetScore();
+		// プレイヤーのHPをリセット
+		player_->ResetHP();
+		// WAVE2でのパラメーター設定初期化を呼ぶ
+
+	}
+
 	///
 	/// 50~55秒 : WAVE2表示スプライトを右から左へ
 	///
@@ -590,6 +650,16 @@ void GameScene::GameSceneFlow() {
 	/*------------------------------------------*/
 	/*---ウェーブセレクトで3を選択したらここへ飛ばす---*/
 	/*------------------------------------------*/
+
+	// ここで各項目リセット
+	if (gameTime_ == SecToFrame(100)) {
+		// プレイヤーのスコアをリセット
+		player_->ResetScore();
+		// プレイヤーのHPをリセット
+		player_->ResetHP();
+		// WAVE3でのパラメーター設定初期化を呼ぶ
+
+	}
 
 	///
 	/// 100~105秒 : WAVE3表示スプライトを右から左へ
@@ -705,4 +775,28 @@ void GameScene::ShowResult() {
 	}
 
 
+}
+
+void GameScene::DrawScoreToResult() {
+	int32_t scoreDigit[6];                   // 各桁の数字を格納
+	int32_t scoreTemp = player_->GetScore(); // 現在のスコアを一時的に保存
+
+	// scoreDigitに現在スコアを格納
+	for (int32_t i = 0; i < kMaxScoreDigit; i++) {
+		scoreDigit[i] = scoreTemp % 10;
+		scoreTemp /= 10;
+	}
+
+	// スコアの表示位置（左上）
+	Vector2 scorePosition = {568.0f, 440.0f}; // 中心になるようにいい感じに
+
+	// スコアを6桁表示
+	for (int32_t i = 0; i < kMaxScoreDigit; i++) {
+		// 各桁の位置を計算
+		Vector2 digitPosition = scorePosition + Vector2{static_cast<float>(i) * (21.0f + 3.0f), 0.0f}; // 21.0fは数字のサイズ。ちょっと間隔を開ける
+		// 読み込んだテクスチャから適切な数字を抜き取る
+		spriteScore_[i]->SetTextureRect({0.0f + (scoreDigit[5 - i] * 50.0f), 0.0f}, {50.0f, 65.0f});
+		spriteScore_[i]->SetPosition(digitPosition);
+		spriteScore_[i]->Draw();
+	}
 }

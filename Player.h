@@ -59,6 +59,12 @@ public:
 	float GetRadius() { return kRadius_; }
 	// レーザーの取得
 	Laser& GetLaser() { return laser_; }
+	// スコアの取得
+	uint32_t GetScore() { return score_; }
+	// スコアのリセット（WAVE移行時に呼ぶ）
+	void ResetScore() { score_ = 0; }
+	// HPのリセット（WAVE移行時に呼ぶ）
+	void ResetHP() { hp_ = 3; }
 
 private:
 	///
