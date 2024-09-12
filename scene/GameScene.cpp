@@ -211,7 +211,7 @@ void GameScene::Initialize(int32_t startWave) {
 	default:
 		gameTime_ = 0;
 	}
-}
+} 
 
 void GameScene::Update() {
 	///
