@@ -36,7 +36,7 @@ public: // メンバ関数
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize();
+	void Initialize(int32_t startWave);
 
 	/// <summary>
 	/// 毎フレーム処理
