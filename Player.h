@@ -57,6 +57,8 @@ public:
 	Vector3 GetWorldPosition();
 	// 半径を取得
 	float GetRadius() { return kRadius_; }
+	// HPを取得
+	int32_t GetHP() { return hp_; }
 	// レーザーの取得
 	Laser& GetLaser() { return laser_; }
 	// スコアの取得

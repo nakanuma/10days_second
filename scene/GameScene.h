@@ -89,6 +89,13 @@ public: // メンバ関数
 	/// </summary>
 	void DrawScoreToResult();
 
+	/// <summary>
+	/// 各WAVEでパラメーターの初期化を行う（プレイヤーと敵の攻撃力・敵のスポーン頻度・敵の落下速度）
+	/// </summary>
+	void InitializeParameterWAVE1();
+	void InitializeParameterWAVE2();
+	void InitializeParameterWAVE3();
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -193,4 +200,13 @@ private: // メンバ変数
 	int32_t gameTime_;
 	// 敵の生成頻度(フレーム)
 	uint32_t nextGenerationFrame_;
+
+	///
+	///	調整可能項目
+	///
+
+	float playerAttackDamage_ = 0.01f; // デフォルト値
+	float enemyAttackDamage_ = 0.008f; // デフォルト値
+	int32_t enemySpawnRate_ = 180;     // デフォルト値(frame)
+	float enemyFallSpeed_ = 0.05f;     // デフォルト値
 };

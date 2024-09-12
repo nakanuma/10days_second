@@ -8,7 +8,7 @@
 
 Enemy::~Enemy() {}
 
-void Enemy::Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position, float radius) { 
+void Enemy::Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position, float radius, float fallSpeed) { 
 	// メンバ変数にモデルを設定
 	assert(modelEnemy);
 	modelEnemy_ = modelEnemy;
@@ -24,7 +24,7 @@ void Enemy::Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position, f
 	// 半径の初期値を設定
 	radius_ = radius;
 	// 自動で下降する速度を設定（低いほどゆっくり降りてくる）
-	fallSpeed_ = 0.05f;
+	fallSpeed_ = fallSpeed;
 
 	///
 	///	予備動作用レーザーの設定

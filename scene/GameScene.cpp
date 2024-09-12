@@ -439,9 +439,6 @@ void GameScene::Debug() {
 void GameScene::CheckAllCollision() {
 	#pragma region プレイヤーのレーザー->敵（OBB->Sphere）
 
-	// プレイヤーのレーザーが敵のサイズを増加させる量（要調整。今は定数にしてるけどあとでいじれるようにしたい）
-	const float kIncrementSize = 0.01f;
-
 	// プレイヤーのレーザーが有効である場合
 	if (player_->GetLaser().IsActive()) {
 		Laser& laser = player_->GetLaser();
@@ -459,7 +456,7 @@ void GameScene::CheckAllCollision() {
 			if (laserOBB.IsCollision(enemyCollider)) {
 				// 敵が地面にいないときのみ衝突した際の処理を呼ぶ（地面にいる敵を大きくしないようにするため）
 				if (!enemy->HasReachedBottom()) {
-					enemy->OnCollision(kIncrementSize);
+					enemy->OnCollision(playerAttackDamage_);
 				}
 			}
 		}
@@ -468,9 +465,6 @@ void GameScene::CheckAllCollision() {
 	#pragma endregion
 
 	#pragma region 敵のレーザー->敵（OBB->Sphere）
-
-	// 敵のレーザーが敵のサイズを増加させる量（要調整。今は定数にしてるけどあとでいじれるようにしたい）
-	const float kEnemyIncrementSize = 0.008f;
 
 	// 各敵のレーザーについて処理を行う
 	for (Enemy* shooterEnemy : enemies_) {
@@ -491,7 +485,7 @@ void GameScene::CheckAllCollision() {
 					if (laserOBB.IsCollision(enemyColider)) {
 						// 衝突した敵のサイズを増加させる（地面にいる敵には当たらないようにする）
 						if (!targetEnemy->HasReachedBottom()) {
-							targetEnemy->OnCollision(kEnemyIncrementSize);
+							targetEnemy->OnCollision(enemyAttackDamage_);
 						}
 					}
 				}
@@ -595,10 +589,12 @@ void GameScene::EnemyGeneration() {
 	/// 
 
 	// 敵を生成するまでの最小フレーム数と最大フレーム数
-	const uint32_t minFrames = 180;
+	/*const uint32_t minFrames = 180;
 	const uint32_t maxFrames = 180;
 	std::uniform_int_distribution<uint32_t> distFrame(minFrames, maxFrames);
-	nextGenerationFrame_ = distFrame(rng);
+	nextGenerationFrame_ = distFrame(rng);*/
+
+	nextGenerationFrame_ = enemySpawnRate_;
 
 	///
 	///	実際に敵の生成を行う & 敵出現マークの生成も行う
@@ -609,7 +605,7 @@ void GameScene::EnemyGeneration() {
 
 	if (gameTime_ % nextGenerationFrame_ == 0) {
 		Enemy* newEnemy = new Enemy();
-		newEnemy->Initialize(modelEnemy_, modelLaser_, {randomX, kGenerateY, 0.0f}, randomRadius);
+		newEnemy->Initialize(modelEnemy_, modelLaser_, {randomX, kGenerateY, 0.0f}, randomRadius, enemyFallSpeed_);
 
 		enemies_.push_back(newEnemy);
 
@@ -632,7 +628,7 @@ void GameScene::GameSceneFlow() {
 		// プレイヤーのHPをリセット
 		player_->ResetHP();
 		// WAVE1でのパラメーター設定初期化を呼ぶ
-
+		InitializeParameterWAVE1();
 	}
 
 	///
@@ -681,7 +677,7 @@ void GameScene::GameSceneFlow() {
 		// プレイヤーのHPをリセット
 		player_->ResetHP();
 		// WAVE2でのパラメーター設定初期化を呼ぶ
-
+		InitializeParameterWAVE2();
 	}
 
 	///
@@ -724,7 +720,7 @@ void GameScene::GameSceneFlow() {
 		// プレイヤーのHPをリセット
 		player_->ResetHP();
 		// WAVE3でのパラメーター設定初期化を呼ぶ
-
+		InitializeParameterWAVE3();
 	}
 
 	///
@@ -865,4 +861,28 @@ void GameScene::DrawScoreToResult() {
 		spriteScore_[i]->SetPosition(digitPosition);
 		spriteScore_[i]->Draw();
 	}
+}
+
+void GameScene::InitializeParameterWAVE1() {
+	// WAVE1での各パラメーターを設定
+	playerAttackDamage_ = 0.01f;
+	enemyAttackDamage_ = 0.008f;
+	enemySpawnRate_ = 180;
+	enemyFallSpeed_ = 0.05f;
+}
+
+void GameScene::InitializeParameterWAVE2() {
+	// WAVE2での各パラメーターを設定
+	playerAttackDamage_ = 0.01f;
+	enemyAttackDamage_ = 0.008f;
+	enemySpawnRate_ = 180;
+	enemyFallSpeed_ = 0.05f;
+}
+
+void GameScene::InitializeParameterWAVE3() {
+	// WAVE3での各パラメーターを設定
+	playerAttackDamage_ = 0.01f;
+	enemyAttackDamage_ = 0.008f;
+	enemySpawnRate_ = 180;
+	enemyFallSpeed_ = 0.05f;
 }
