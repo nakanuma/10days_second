@@ -183,6 +183,11 @@ private: // メンバ変数
 	// 空っぽの星に使用するスプライト（3つ）
 	Sprite* spriteEmptyStar_[3];
 
+	// スコアに応じて表示する実際の星（3つ）
+	Sprite* spriteFullStar_[3];
+	// 星を表示する数
+	int32_t displayStarNum_ = 0;
+
 	/*残り時間表示*/
 
 	// そのWAVEが何フレームあるかを記録（毎WAVEリセット時にセットする）

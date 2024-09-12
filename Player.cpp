@@ -67,7 +67,7 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 
 	// レーザー射撃中/非射撃中の自動上昇・下降の速度の初期値を設定（ImGuiでいじれるように）
 	autoAscendingSpeed_ = 0.1f;
-	autoDescendingSpeed_ = 0.15f;
+	autoDescendingSpeed_ = 0.25f;
 
 	// 現在の下降速度
 	currentDescendingSpeed_ = 0.0f;
@@ -205,7 +205,7 @@ void Player::Move() {
 			}
 
 			// 角度を滑らかに補間
-			const float smoothingFactor = 0.04f; // 補間の速さ（低いほどゆっくり、1.0はすぐにターゲット角度になる）
+			const float smoothingFactor = 0.025f; // 補間の速さ（低いほどゆっくり、1.0はすぐにターゲット角度になる）
 			rotation.z += smoothingFactor * angleDifference;
 
 			// 回転角度を -π ～ +π の範囲にクランプ
