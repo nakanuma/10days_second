@@ -103,7 +103,7 @@ GameScene::~GameScene() {
 void GameScene::Initialize() {
 	/* 各種初期化 */
 
-	dxCommon_ = DirectXCommon::GetInstance();
+	dxCommon_ = DirectXCommon::GetInstance(); 
 	input_ = Input::GetInstance();
 	audio_ = Audio::GetInstance();
 
