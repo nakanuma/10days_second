@@ -224,7 +224,7 @@ void Player::Move() {
 	///	射撃中のレーザーのON/OFFによって、自動で上昇と下降を行う
 	/// 
 
-	// レーザーが有効な場合、自動で上昇
+	// レーザーが有効な場合、自動で上昇 
 	if (laser_.IsActive()) {
 		worldTransform_.translation_.y += autoAscendingSpeed_;
 		currentDescendingSpeed_ = 0.0f; // 上昇中は下降速度をリセット
