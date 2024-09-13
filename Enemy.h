@@ -2,6 +2,7 @@
 #include "WorldTransform.h"
 #include "ViewProjection.h"
 #include "Model.h"
+#include "Audio.h"
 
 // MyClass
 #include "Laser.h"
@@ -58,6 +59,7 @@ public:
 	Laser& GetLaser() { return laser_; }
 
 private:
+	Audio* audio_ = nullptr;
 	///
 	///	基本的な情報
 	/// 
@@ -92,4 +94,8 @@ private:
 	bool endAntic_ = false;
 	// 予備動作タイマー（予備動作レーザーの拡大が開始する時間を決める）
 	uint32_t anticTimer_ = 0;
+
+
+	// サウンド
+	uint32_t laserSE_ = 0;
 };

@@ -4,21 +4,28 @@
 #include "DirectXCommon.h"
 #include "Input.h"
 #include "Model.h"
+#include "PrimitiveDrawer.h"
 #include "Sprite.h"
 #include "ViewProjection.h"
-#include "WorldTransform.h"
-#include "PrimitiveDrawer.h"
 #include "WinApp.h"
+#include "WorldTransform.h"
 
 #include <list>
 #include <cstdlib>
 #include <ctime>
+#include <memory>
 
 // MyClass
-#include "Player.h"
+#include "DeathParticles.h"
 #include "Enemy.h"
 #include "EnemyAppearMark.h"
 #include "EnemyDeadEmitter.h"
+#include "Fade.h"
+#include "Particle.h"
+#include "Player.h"
+#include "Wave.h"
+
+class Wave;
 
 /// <summary>
 /// ゲームシーン
@@ -26,6 +33,14 @@
 class GameScene {
 
 public: // メンバ関数
+	// ゲームのフェーズ
+	enum class Phase {
+		kFadeIn,  // フェードイン
+		kMain,    // メイン部
+		kDeath,   // 死亡時
+		kFadeOut, // フェードアウト
+	};
+
 	/// <summary>
 	/// コンストクラタ
 	/// </summary>
@@ -39,7 +54,7 @@ public: // メンバ関数
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(int32_t startWave);
+	void Initialize();
 
 	/// <summary>
 	/// 毎フレーム処理
@@ -57,6 +72,11 @@ public: // メンバ関数
 	void Debug();
 
 	/// <summary>
+	/// プレイヤーが生きているかの確認
+	/// </summary>
+	void CheckPlayerAlive();
+
+	/// <summary>
 	/// 全ての衝突判定
 	/// </summary>
 	void CheckAllCollision();
@@ -65,6 +85,11 @@ public: // メンバ関数
 	/// 敵の自動生成 && 敵出現マークの生成
 	/// </summary>
 	void EnemyGeneration();
+
+	/// <summary>
+	/// パーティクルの自動生成
+	/// </summary>
+	void ParticleGeneration();
 
 	/// <summary>
 	/// ゲームシーンでの経過時間による流れを全て記述
@@ -99,6 +124,29 @@ public: // メンバ関数
 	void InitializeParameterWAVE2();
 	void InitializeParameterWAVE3();
 
+	/// <summary>
+	/// 終了フラグの取得
+	/// </summary>
+	bool GetIsFinished();
+
+	// Behavior 型を文字列に変換する関数
+	// Behavior 型を文字列に変換する関数
+	const char* BehaviorToString(Phase phase) {
+		switch (phase) {
+		case Phase::kFadeIn:
+			return "FadeIn";
+		case Phase::kMain:
+			return "Main";
+		case Phase::kDeath:
+			return "Death";
+		case Phase::kFadeOut:
+			return "FadeOut";
+		// 他の状態を追加
+		default:
+			return "Unknown";
+		}
+	}
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -107,13 +155,27 @@ private: // メンバ変数
 	/// <summary>
 	/// ゲームシーン用
 	/// </summary>
-	
+
 	// ビュープロジェクション
 	ViewProjection viewProjection_;
 
+	// ウェーブ管理
+	std::unique_ptr<Wave> wave_ = nullptr;
+
+	/*==================================================================================*/
+	// フェード関連
+
+	// フェード
+	std::unique_ptr<Fade> fade_ = nullptr;
+	// 現在のフェーズ
+	Phase phase_ = Phase::kFadeIn;
+
+	// フェードタイマー
+	const float fadeTimer_ = 1.0f;
+
 	///
 	///	プレイヤー関連
-	/// 
+	///
 
 	// プレイヤー本体
 	Player* player_ = nullptr;
@@ -123,13 +185,13 @@ private: // メンバ変数
 
 	///
 	///	敵関連
-	/// 
+	///
 
 	// 敵のリスト
 	std::list<Enemy*> enemies_;
 	// 敵出現マークのリスト
 	std::list<EnemyAppearMark*> enemyAppearMarks_;
-	
+
 	// 敵のモデル
 	Model* modelEnemy_ = nullptr;
 	// 敵出現マークのモデル
@@ -137,7 +199,7 @@ private: // メンバ変数
 
 	///
 	///	レーザー関連
-	/// 
+	///
 
 	// モデル（敵のレーザー）
 	Model* modelLaser_ = nullptr;
@@ -146,7 +208,7 @@ private: // メンバ変数
 
 	///
 	///	スプライト
-	/// 
+	///
 
 	// 各ウェーブ開始時に出てくるウェーブの文字（1,2,3のテクスチャハンドルをセットして使い回す）
 	Sprite* spriteWaveNum_ = nullptr;
@@ -164,6 +226,19 @@ private: // メンバ変数
 	// 画面右側に表示する操作説明 & 文字
 	Sprite* spriteControl_ = nullptr;
 	Sprite* spriteBackText_ = nullptr;
+
+	///
+	///	スプライト
+	///
+
+	// クリアサウンド
+	uint32_t clearSH_ = 0;
+	// ゲームオーバーサウンド
+	uint32_t gameoverSH_ = 0;
+	// サウンド再生フラグ
+	bool isPlayclearSH_ = false;
+	// サウンド再生フラグ
+	bool isPlayGameoverSH_ = false;
 
 	/*--------------------*/
 	/* リザルトで使用するもの */
@@ -206,12 +281,22 @@ private: // メンバ変数
 
 	///
 	///	その他
-	/// 
-	
+	///
+
+	// 背景パーティクルのリスト
+	std::list<Particle*> particles_;
+	// 死亡時パーティクル
+	std::unique_ptr<DeathParticles> deathParticles_ = nullptr;
+	// モデル
+	std::unique_ptr<Model> modelDeathParticle_ = nullptr;
+
 	// ゲームシーン経過時間をカウント
 	int32_t gameTime_;
 	// 敵の生成頻度(フレーム)
 	uint32_t nextGenerationFrame_;
+
+	// 終了フラグ
+	bool isFinished_ = false;
 
 	///
 	///	パーティクルについて

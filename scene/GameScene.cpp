@@ -42,6 +42,11 @@ GameScene::~GameScene() {
 		delete mark;
 	}
 
+	// パーティクルをすべて開放
+	for (Particle* particle : particles_) {
+		delete particle;
+	}
+
 	///
 	///	レーザー
 	///
@@ -95,7 +100,7 @@ GameScene::~GameScene() {
 	delete spriteBackText_;
 }
 
-void GameScene::Initialize(int32_t startWave) {
+void GameScene::Initialize() {
 	/* 各種初期化 */
 
 	dxCommon_ = DirectXCommon::GetInstance();
@@ -104,6 +109,9 @@ void GameScene::Initialize(int32_t startWave) {
 
 	// ビュープロジェクション初期化
 	viewProjection_.Initialize();
+
+	// ウェーブ管理
+	wave_ = std::make_unique<Wave>();
 
 	///
 	///	レーザー
@@ -136,7 +144,7 @@ void GameScene::Initialize(int32_t startWave) {
 	///
 	///	スプライト生成
 	///
-	uint32_t textureWhite1x1 = TextureManager::Load("white1x1.png");
+	uint32_t textureWhite1x1 = TextureManager::Load("./Resources/images/title/back_white.png");
 
 	/* 各ウェーブ開始時に出てくるウェーブの文字（1, 2, 3のテクスチャハンドルをセットして使い回す）*/
 	wave1TextureHandle_ = TextureManager::Load("images/WAVE1.png");
@@ -147,7 +155,7 @@ void GameScene::Initialize(int32_t startWave) {
 	spriteWaveNum_->SetAnchorPoint({0.5f, 0.5f}); // アンカーポイントを中心に設定
 
 	/* 背景 */
-	spriteBackGround_ = Sprite::Create(textureWhite1x1, {0.0f, 0.0f}, {0.5f, 0.5f, 0.5f, 1.0f});
+	spriteBackGround_ = Sprite::Create(textureWhite1x1, {0.0f, 0.0f});
 	spriteBackGround_->SetSize({1280.0f, 720.0f});
 
 	/* ゲーム領域ではない画面両側を隠すスプライト */
@@ -216,42 +224,88 @@ void GameScene::Initialize(int32_t startWave) {
 	enemyDeadEmitter_.Initialize(modelParticle_);
 
 	///
+	///	サウンド生成
+	///
+
+	// クリアサウンド
+	clearSH_ = audio_->LoadWave("./Resources/sounds/SE_clear.wav");
+	// ゲームオーバーサウンド
+	gameoverSH_ = audio_->LoadWave("./Resources/sounds/SE_gameover.wav");
+
+	///
 	///	その他
 	///
 
-	// ゲームシーン経過時間の初期化（基本は0にする）
-	switch (startWave) {
-	case 1:
-		gameTime_ = 0;
-		break;
+	// 初期ウェーブ
+	int wave = Wave::GetInstance().GetWave();
 
-	case 2:
-		gameTime_ = 3000;
-		break;
-
-	case 3:
-		gameTime_ = 6000;
-		break;
-
-	default:
-		gameTime_ = 0;
+	// ウェーブの値によって開始ウェーブが異なる
+	if (wave == 1) {
+		// ウェーブ1の開始時間をセット
+		gameTime_ = SecToFrame(0);
+	} else if (wave == 2) {
+		// ウェーブ2の開始時間をセット
+		gameTime_ = SecToFrame(50);
+	} else if (wave == 3) {
+		// ウェーブの開始時間をセット
+		gameTime_ = SecToFrame(100);
+	} else {
+		gameTime_ = SecToFrame(0);
 	}
+
+	///
+	/// 画面遷移(フェード)関連
+	///
+
+	fade_ = std::make_unique<Fade>();
+
+	fade_->Initialize();
+
+	fade_->Start(Fade::Status::FadeIn, fadeTimer_);
 }
 
 void GameScene::Update() {
-	///
-	///	プレイヤー更新
-	///
 
-	player_->Update();
+	/*WAVE1の場合*/
+	uint32_t w1s1score = 200;  // このスコアに達してたら星1
+	uint32_t w1s2score = 600;  // このスコアに達してたら星2
+	uint32_t w1s3score = 1000; // このスコアに達してたら星3
 
-	///
-	///	敵関連の更新
-	///
+	/*WAVE2の場合*/
+	uint32_t w2s1score = 200;  // このスコアに達してたら星1
+	uint32_t w2s2score = 600;  // このスコアに達してたら星2
+	uint32_t w2s3score = 1000; // このスコアに達してたら星3
 
-	// 敵全て
-	for (Enemy* enemy : enemies_) {
-		enemy->Update();
+	/*WAVE3の場合*/
+	uint32_t w3s1score = 200;  // このスコアに達してたら星1
+	uint32_t w3s2score = 600;  // このスコアに達してたら星2
+	uint32_t w3s3score = 1000; // このスコアに達してたら星3
+
+	switch (phase_) {
+	case Phase::kFadeIn:
+		if (fade_->IsFinished()) {
+			phase_ = Phase::kMain;
+		}
+		///
+		///	プレイヤー更新
+		///
+
+		player_->Update();
+		break;
+	case Phase::kMain:
+		///
+		///	プレイヤー更新
+		///
+
+		player_->Update();
+
+		///
+		///	敵関連の更新
+		///
+
+		// 敵全て
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
 
 		// 空中にいる敵が死んだ際、プレイヤーにスコアを100与える
 		if (enemy->IsDead() && !enemy->HasReachedBottom()) {
@@ -272,104 +326,118 @@ void GameScene::Update() {
 		return false;
 	});
 
-	// 敵出現マーク全て
-	for (EnemyAppearMark* mark : enemyAppearMarks_) {
-		mark->Update();
-	}
-	// 死んだマークをリストから削除
-	enemyAppearMarks_.remove_if([](EnemyAppearMark* mark) {
-		if (mark->IsDead()) {
-			delete mark;
-			return true;
+		// 敵出現マーク全て
+		for (EnemyAppearMark* mark : enemyAppearMarks_) {
+			mark->Update();
 		}
-		return false;
-	});
+		// 死んだマークをリストから削除
+		enemyAppearMarks_.remove_if([](EnemyAppearMark* mark) {
+			if (mark->IsDead()) {
+				delete mark;
+				return true;
+			}
+			return false;
+		});
 
-	///
-	/// ゲームシーン全ての流れの処理
-	///
-
-	GameSceneFlow();
-
-	///
-	///	残り時間の管理（各WAVE開始時にそのWAVEの残り時間(f)を指定し、左側で表示するために使用）
-	///
-
-	// 残り時間が存在している場合、減らしていく
-	if (remainingTime_ > 0) {
-		remainingTime_--;
-		// 残り時間が無くなった場合、0で固定
-	} else {
-		remainingTime_ = 0;
-	}
-
-	///
-	///	各WAVEリザルト表示時、現在スコアに応じて表示する星の数を設定
-	///
-
-	/*WAVE1の場合*/
-	uint32_t w1s1score = 200;  // このスコアに達してたら星1
-	uint32_t w1s2score = 600;  // このスコアに達してたら星2
-	uint32_t w1s3score = 1000; // このスコアに達してたら星3
-
-	if (gameTime_ >= SecToFrame(45) && gameTime_ <= SecToFrame(50)) {
-		// 星1個の場合
-		if (player_->GetScore() >= w1s1score && player_->GetScore() < w1s2score) {
-			displayStarNum_ = 1;
+		// パーティクルの更新
+		for (Particle* particle : particles_) {
+			particle->Update();
 		}
 
-		// 星2個の場合
-		if (player_->GetScore() >= w1s2score && player_->GetScore() < w1s3score) {
-			displayStarNum_ = 2;
+		///
+		/// プレイヤーの生存確認
+		///
+
+		CheckPlayerAlive();
+
+		///
+		/// パーティクルの自動生成
+		///
+		///
+
+		ParticleGeneration();
+
+		///
+		/// ゲームシーン全ての流れの処理
+		///
+
+		GameSceneFlow();
+
+		///
+		///	残り時間の管理（各WAVE開始時にそのWAVEの残り時間(f)を指定し、左側で表示するために使用）
+		///
+
+		// 残り時間が存在している場合、減らしていく
+		if (remainingTime_ > 0) {
+			remainingTime_--;
+			// 残り時間が無くなった場合、0で固定
+		} else {
+			remainingTime_ = 0;
 		}
 
-		// 星3個の場合
-		if (player_->GetScore() >= w1s3score) {
-			displayStarNum_ = 3;
-		}
-	}
+		///
+		///	各WAVEリザルト表示時、現在スコアに応じて表示する星の数を設定
+		///
 
-	/*WAVE2の場合*/
-	uint32_t w2s1score = 200;  // このスコアに達してたら星1
-	uint32_t w2s2score = 600;  // このスコアに達してたら星2
-	uint32_t w2s3score = 1000; // このスコアに達してたら星3
-	if (gameTime_ >= SecToFrame(95) && gameTime_ <= SecToFrame(100)) {
-		// 星1個の場合
-		if (player_->GetScore() >= w2s1score && player_->GetScore() < w2s2score) {
-			displayStarNum_ = 1;
-		}
+		/*WAVE1の場合*/
+		// uint32_t w1s1score = 200;  // このスコアに達してたら星1
+		// uint32_t w1s2score = 600;  // このスコアに達してたら星2
+		// uint32_t w1s3score = 1000; // このスコアに達してたら星3
 
-		// 星2個の場合
-		if (player_->GetScore() >= w2s2score && player_->GetScore() < w2s3score) {
-			displayStarNum_ = 2;
-		}
+		if (gameTime_ >= SecToFrame(45) && gameTime_ <= SecToFrame(50)) {
+			// 星1個の場合
+			if (player_->GetScore() >= w1s1score && player_->GetScore() < w1s2score) {
+				displayStarNum_ = 1;
+			}
 
-		// 星3個の場合
-		if (player_->GetScore() >= w2s3score) {
-			displayStarNum_ = 3;
-		}
-	}
+			// 星2個の場合
+			if (player_->GetScore() >= w1s2score && player_->GetScore() < w1s3score) {
+				displayStarNum_ = 2;
+			}
 
-	/*WAVE3の場合*/
-	uint32_t w3s1score = 200;  // このスコアに達してたら星1
-	uint32_t w3s2score = 600;  // このスコアに達してたら星2
-	uint32_t w3s3score = 1000; // このスコアに達してたら星3
-	if (gameTime_ >= SecToFrame(145) && gameTime_ <= SecToFrame(150)) {
-		// 星1個の場合
-		if (player_->GetScore() >= w3s1score && player_->GetScore() < w3s2score) {
-			displayStarNum_ = 1;
+			// 星3個の場合
+			if (player_->GetScore() >= w1s3score) {
+				displayStarNum_ = 3;
+			}
 		}
 
-		// 星2個の場合
-		if (player_->GetScore() >= w3s2score && player_->GetScore() < w3s3score) {
-			displayStarNum_ = 2;
+		/*WAVE2の場合*/
+		// uint32_t w2s1score = 200;  // このスコアに達してたら星1
+		// uint32_t w2s2score = 600;  // このスコアに達してたら星2
+		// uint32_t w2s3score = 1000; // このスコアに達してたら星3
+		if (gameTime_ >= SecToFrame(95) && gameTime_ <= SecToFrame(100)) {
+			// 星1個の場合
+			if (player_->GetScore() >= w2s1score && player_->GetScore() < w2s2score) {
+				displayStarNum_ = 1;
+			}
+
+			// 星2個の場合
+			if (player_->GetScore() >= w2s2score && player_->GetScore() < w2s3score) {
+				displayStarNum_ = 2;
+			}
+
+			// 星3個の場合
+			if (player_->GetScore() >= w2s3score) {
+				displayStarNum_ = 3;
+			}
 		}
 
-		// 星3個の場合
-		if (player_->GetScore() >= w3s3score) {
-			displayStarNum_ = 3;
+		if (gameTime_ >= SecToFrame(145) && gameTime_ <= SecToFrame(150)) {
+			// 星1個の場合
+			if (player_->GetScore() >= w3s1score && player_->GetScore() < w3s2score) {
+				displayStarNum_ = 1;
+			}
+
+			// 星2個の場合
+			if (player_->GetScore() >= w3s2score && player_->GetScore() < w3s3score) {
+				displayStarNum_ = 2;
+			}
+
+			// 星3個の場合
+			if (player_->GetScore() >= w3s3score) {
+				displayStarNum_ = 3;
+			}
 		}
-	}
 
 	///
 	///	シェイクを行う
@@ -412,15 +480,47 @@ void GameScene::Update() {
 	///	プレイヤーの体力が0になったらフェードしてセレクトへ戻る
 	///
 
-	if (player_->GetHP() <= 0) {
-		// フェードしてセレクト画面へ
+		if (player_->GetHP() <= 0) {
+			// フェードしてセレクト画面へ
+		}
+
+		///
+		///	全ての衝突判定を行う
+		///
+
+		CheckAllCollision();
+
+		/// ゲームシーン経過時間をカウント
+		gameTime_++;
+
+		break;
+	case Phase::kDeath:
+		// デスパーティクル存在時のみ更新
+		if (deathParticles_) {
+			deathParticles_->Update();
+		}
+		// デスパーティクル消滅後画面遷移開始
+		if (deathParticles_->IsFinished()) {
+			phase_ = Phase::kFadeOut;
+
+			// フェードアウト開始
+			fade_->Start(Fade::Status::FadeOut, fadeTimer_);
+		}
+		break;
+	case Phase::kFadeOut:
+
+		if (fade_->IsFinished()) {
+			isFinished_ = true;
+		}
+		if (!isPlayGameoverSH_) {
+			audio_->PlayWave(gameoverSH_);
+			isPlayGameoverSH_ = true;
+		}
+		break;
 	}
 
-	///
-	///	全ての衝突判定を行う
-	///
-
-	CheckAllCollision();
+	// フェードの更新
+	fade_->Update();
 
 	///
 	///	パーティクル関連更新
@@ -434,9 +534,6 @@ void GameScene::Update() {
 	///
 
 	Debug();
-
-	/// ゲームシーン経過時間をカウント
-	gameTime_++;
 }
 
 void GameScene::Draw() {
@@ -454,6 +551,10 @@ void GameScene::Draw() {
 
 	/* ゲーム背景の描画 */
 	spriteBackGround_->Draw();
+	// パーティクルの描画
+	for (Particle* particle : particles_) {
+		particle->Draw();
+	}
 
 	// スプライト描画後処理
 	Sprite::PostDraw();
@@ -473,7 +574,9 @@ void GameScene::Draw() {
 	///	プレイヤー描画
 	///
 
-	player_->Draw(viewProjection_);
+	if (player_->IsAlive()) {
+		player_->Draw(viewProjection_);
+	}
 
 	///
 	///	敵関連の描画
@@ -497,6 +600,10 @@ void GameScene::Draw() {
 
 	// 敵死亡時パーティクル描画
 	enemyDeadEmitter_.Draw(viewProjection_);
+
+	if (!player_->IsAlive()) {
+		deathParticles_->Draw();
+	}
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
@@ -602,6 +709,12 @@ void GameScene::Draw() {
 
 	player_->DrawUI();
 
+	///
+	/// フェードの描画
+	///
+
+	fade_->Draw();
+
 	// スプライト描画後処理
 	Sprite::PostDraw();
 
@@ -609,6 +722,8 @@ void GameScene::Draw() {
 }
 
 void GameScene::Debug() {
+#ifdef _DEBUG
+
 	ImGui::Begin("GameScene");
 
 	//// 敵を出現させる
@@ -637,6 +752,30 @@ void GameScene::Debug() {
 	ImGui::Text("isShake : %d", isShake_);
 
 	ImGui::End();
+
+#endif
+}
+
+void GameScene::CheckPlayerAlive() {
+
+	// if (!player_->IsAlive()) {
+	//	// フェード切り替え
+	//	phase_ = Phase::kFadeOut;
+	//	fade_->Start(Fade::Status::FadeOut, fadeTimer_);
+	// }
+
+	if (!player_->IsAlive()) {
+		// 死亡演出フェーズに切り替え
+		phase_ = Phase::kDeath;
+		// 自キャラの座標を取得
+		const Vector3& deathParticlesPosition = player_->GetWorldPosition();
+		// デスパーティクルの生成
+		deathParticles_ = std::make_unique<DeathParticles>();
+		// 自キャラの3Dモデルの生成
+		modelDeathParticle_.reset(Model::CreateFromOBJ("deathParticle", true));
+		// デスパーティクルの初期化
+		deathParticles_->Initialize(modelDeathParticle_.get(), &viewProjection_, deathParticlesPosition);
+	}
 }
 
 void GameScene::CheckAllCollision() {
@@ -823,6 +962,41 @@ void GameScene::EnemyGeneration() {
 	}
 }
 
+void GameScene::ParticleGeneration() {
+
+	// フレームカウンタを保持する静的変数
+	static int frameCounter = 0;
+
+	// フレームカウンタを増加
+	frameCounter++;
+
+	// 5フレームごとにパーティクルを生成
+	if (frameCounter % 20 == 0) {
+		///
+		/// パーティクル生成のX座標ランダム化
+		///
+		std::random_device rd;
+		std::mt19937 rng(rd());
+
+		// X座標。指定範囲の間をランダムで生成
+		const float kRightGenerateX = 350;
+		const float kLeftGenerateX = 930;
+		std::uniform_real_distribution<float> distX(kRightGenerateX, kLeftGenerateX);
+		// 指定範囲のランダムなX座標を生成
+		float randomX = distX(rng);
+
+		// Y座標。固定（800で生成）
+		const float kGenerateY = 800.0f;
+
+		// パーティクルの座標を設定
+		Particle* newParticle = new Particle();
+		newParticle->Initialize({randomX, kGenerateY});
+
+		// パーティクルリストに追加
+		particles_.push_back(newParticle);
+	}
+}
+
 void GameScene::GameSceneFlow() {
 	// ここで各項目リセット
 	if (gameTime_ == SecToFrame(0)) {
@@ -868,6 +1042,10 @@ void GameScene::GameSceneFlow() {
 	///
 
 	if (gameTime_ >= SecToFrame(45) && gameTime_ <= SecToFrame(50)) {
+		if (!isPlayclearSH_) {
+			audio_->PlayWave(clearSH_);
+			isPlayclearSH_ = true;
+		}
 		ShowResult();
 	}
 
@@ -885,6 +1063,7 @@ void GameScene::GameSceneFlow() {
 		displayStarNum_ = 0;
 		// WAVE2でのパラメーター設定初期化を呼ぶ
 		InitializeParameterWAVE2();
+		isPlayclearSH_ = false;
 	}
 
 	///
@@ -919,6 +1098,10 @@ void GameScene::GameSceneFlow() {
 	///
 
 	if (gameTime_ >= SecToFrame(95) && gameTime_ <= SecToFrame(100)) {
+		if (!isPlayclearSH_) {
+			audio_->PlayWave(clearSH_);
+			isPlayclearSH_ = true;
+		}
 		ShowResult();
 	}
 
@@ -936,6 +1119,7 @@ void GameScene::GameSceneFlow() {
 		displayStarNum_ = 0;
 		// WAVE3でのパラメーター設定初期化を呼ぶ
 		InitializeParameterWAVE3();
+		isPlayclearSH_ = false;
 	}
 
 	///
@@ -971,15 +1155,21 @@ void GameScene::GameSceneFlow() {
 
 	if (gameTime_ >= SecToFrame(145) && gameTime_ <= SecToFrame(150)) {
 		ShowResult();
+		if (!isPlayclearSH_) {
+			audio_->PlayWave(clearSH_);
+			isPlayclearSH_ = true;
+		}
 	}
 
 	///
-	///	150~155秒 : 何もしない
+	///	150秒~ : 終了
 	///
 
-	///
-	///	155~ : フェードしてセレクトへ戻る
-	///
+	if (gameTime_ >= SecToFrame(150)) {
+		// フェード切り替え
+		phase_ = Phase::kFadeOut;
+		fade_->Start(Fade::Status::FadeOut, fadeTimer_);
+	}
 }
 
 void GameScene::WaveSpriteMove() {
@@ -1120,3 +1310,5 @@ void GameScene::CameraShake(float amount, int32_t duration) {
 	shakeDuration_ = duration;
 	shakeTimer_ = duration;
 }
+
+bool GameScene::GetIsFinished() { return isFinished_; }
