@@ -1,7 +1,10 @@
 #pragma once
 #include "Player.h"
 
+#ifdef DEBUG
 #include <ImGui.h>
+#endif // DEBUG
+
 #include <memory>
 
 class TutorialScene {

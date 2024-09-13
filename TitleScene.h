@@ -11,7 +11,10 @@
 #include "Fade.h"
 #include "Particle.h"
 
+#ifdef DEBUG
 #include <ImGui.h>
+#endif // DEBUG
+
 #include <list>
 #include <memory>
 

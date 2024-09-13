@@ -4,7 +4,10 @@
 #include <numbers>
 
 #include "TextureManager.h"
+
+#ifdef DEBUG
 #include "imgui.h"
+#endif // DEBUF
 
 // MyClass
 #include "Easing.h"

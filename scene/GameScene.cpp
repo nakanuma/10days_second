@@ -1,6 +1,9 @@
 #include "GameScene.h"
 #include "TextureManager.h"
+
+#ifdef DEBUG
 #include "imgui.h"
+#endif // DEBUG
 
 #include <cassert>
 #include <numbers>

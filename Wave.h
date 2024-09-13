@@ -1,5 +1,8 @@
 #pragma once
+
+#ifdef DEBUG
 #include <ImGui.h>
+#endif // DEBUG
 
 // ウェーブ管理
 class Wave {

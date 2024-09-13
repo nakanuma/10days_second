@@ -1,7 +1,10 @@
 #pragma once
 
 #include "algorithm"
+
+#ifdef DEBUG
 #include <ImGui.h>
+#endif // DEBUG
 
 #include "Sprite.h"
 #include "TextureManager.h"

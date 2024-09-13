@@ -13,7 +13,10 @@
 #include "Fade.h"
 #include "Wave.h"
 
+#ifdef DEBUG
 #include <ImGui.h>
+#endif // DEBUG
+
 #include <list>
 #include <memory>
 

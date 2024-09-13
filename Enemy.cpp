@@ -1,7 +1,10 @@
 #include "Enemy.h"
-#include "imgui.h"
 #include <algorithm>
 #include <cassert>
+
+#ifdef DEBUG
+#include "imgui.h"
+#endif // DEBUG
 
 // MyClass
 #include "Easing.h"

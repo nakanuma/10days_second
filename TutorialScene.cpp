@@ -45,11 +45,11 @@ void TutorialScene::Update() {
 }
 
 void TutorialScene::Draw(ID3D12GraphicsCommandList* commandList) {
-	
-	#pragma region 3Dオブジェクト描画
+
+#pragma region 3Dオブジェクト描画
 	// 3Dオブジェクト描画前処理
 	Model::PreDraw(commandList);
-	
+
 	// プレイヤー描画
 	player_->Draw(viewProjection_);
 
@@ -75,7 +75,6 @@ void TutorialScene::EliminateEnemy() {
 
 		phase_ = 2;
 		timer_ = 300;
-		
 	}
 
 	timer_--;
@@ -106,13 +105,16 @@ void TutorialScene::Operation() {
 }
 
 void TutorialScene::Debug() {
-	
+#ifdef DEBUG
+
 	ImGui::Begin("Tutorial");
 
 	ImGui::Text("Timer : %d", timer_);
 	ImGui::Text("Phase : %d", phase_);
 
 	ImGui::End();
+
+#endif
 }
 
 bool TutorialScene::GetIsFinished() { return isFinished_; }
