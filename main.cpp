@@ -22,7 +22,7 @@ enum class Scene {
 	kGame,
 };
 
-// 現在のシーン
+// 現在のシーン//
 Scene scene = Scene::kTitle;
 
 // Windowsアプリでのエントリーポイント(main関数)
