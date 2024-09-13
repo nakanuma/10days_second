@@ -16,6 +16,7 @@
 #include "Player.h"
 #include "Enemy.h"
 #include "EnemyAppearMark.h"
+#include "EnemyDeadEmitter.h"
 
 /// <summary>
 /// ゲームシーン
@@ -207,10 +208,19 @@ private: // メンバ変数
 	uint32_t nextGenerationFrame_;
 
 	///
+	///	パーティクルについて
+	///		
+
+	// 使用するモデル
+	Model* modelParticle_ = nullptr;
+	// エミッター
+	EnemyDeadEmitter enemyDeadEmitter_;
+
+	///
 	///	調整可能項目
 	///
 
-	float playerAttackDamage_ = 0.01f; // デフォルト値
+	float playerAttackDamage_ = 0.013f; // デフォルト値
 	float enemyAttackDamage_ = 0.008f; // デフォルト値
 	int32_t enemySpawnRate_ = 180;     // デフォルト値(frame)
 	float enemyFallSpeed_ = 0.05f;     // デフォルト値

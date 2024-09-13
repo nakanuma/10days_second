@@ -70,6 +70,18 @@
     <Filter Include="ヘッダー ファイル\Enemy">
       <UniqueIdentifier>{18cf509e-070c-441c-bcbe-920375ba10ab}</UniqueIdentifier>
     </Filter>
+    <Filter Include="ヘッダー ファイル\particle">
+      <UniqueIdentifier>{b798c05f-d073-408c-a4e0-a86b63cc0d07}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\particle">
+      <UniqueIdentifier>{f70d91ea-96a6-4558-862a-045eff5c3be2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ソース ファイル\emitter">
+      <UniqueIdentifier>{ff8a1da3-9fa8-4aa6-a155-6750044aa0eb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="ヘッダー ファイル\emitter">
+      <UniqueIdentifier>{902282a4-54e5-4029-a486-2dcfdb9d192d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -99,14 +111,29 @@
     <ClCompile Include="Player.cpp">
       <Filter>ソース ファイル\player</Filter>
     </ClCompile>
-    <ClCompile Include="PlayerBullet.cpp">
-      <Filter>ソース ファイル\player</Filter>
-    </ClCompile>
-    <ClCompile Include="Line.cpp">
-      <Filter>ソース ファイル\Line</Filter>
-    </ClCompile>
     <ClCompile Include="Enemy.cpp">
       <Filter>ソース ファイル\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="Easing.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyAppearMark.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="Laser.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="OBBCollider.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="SphereCollider.cpp">
+      <Filter>ソース ファイル</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyDeadParticle.cpp">
+      <Filter>ソース ファイル\particle</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyDeadEmitter.cpp">
+      <Filter>ソース ファイル\emitter</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -200,14 +227,29 @@
     <ClInclude Include="Player.h">
       <Filter>ヘッダー ファイル\player</Filter>
     </ClInclude>
-    <ClInclude Include="PlayerBullet.h">
-      <Filter>ヘッダー ファイル\player</Filter>
-    </ClInclude>
-    <ClInclude Include="Line.h">
-      <Filter>ヘッダー ファイル\Line</Filter>
-    </ClInclude>
     <ClInclude Include="Enemy.h">
       <Filter>ヘッダー ファイル\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="Easing.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyAppearMark.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="Laser.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="OBBCollider.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="SphereCollider.h">
+      <Filter>ヘッダー ファイル</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyDeadParticle.h">
+      <Filter>ヘッダー ファイル\particle</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyDeadEmitter.h">
+      <Filter>ヘッダー ファイル\emitter</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

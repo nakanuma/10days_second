@@ -48,6 +48,12 @@ GameScene::~GameScene() {
 	delete modelPlayerLaser_;
 
 	///
+	///	パーティクル用モデル
+	///		
+
+	delete modelParticle_;
+
+	///
 	///	スプライト
 	///
 
@@ -191,6 +197,13 @@ void GameScene::Initialize(int32_t startWave) {
 	}
 
 	///
+	///	パーティクル
+	///		
+
+	modelParticle_ = Model::CreateFromOBJ("particle", true);
+	enemyDeadEmitter_.Initialize(modelParticle_);
+
+	///
 	///	その他
 	///
 
@@ -232,6 +245,12 @@ void GameScene::Update() {
 		if (enemy->IsDead() && !enemy->HasReachedBottom()) {
 			player_->AddScore(200);
 		}
+
+		// 敵死亡時パーティクルの生成
+		if (enemy->IsDead()) {
+			enemyDeadEmitter_.Emit(enemy->GetWorldPosition());
+		}
+
 	}
 	// 死んだ敵をリストから削除
 	enemies_.remove_if([](Enemy* enemy) {
@@ -356,6 +375,13 @@ void GameScene::Update() {
 	CheckAllCollision();
 
 	///
+	///	パーティクル関連更新
+	/// 
+
+	// 敵死亡時パーティクル更新
+	enemyDeadEmitter_.Update();
+
+	///
 	///	デバッグ情報
 	///
 
@@ -416,6 +442,13 @@ void GameScene::Draw() {
 	for (EnemyAppearMark* mark : enemyAppearMarks_) {
 		mark->Draw(viewProjection_);
 	}
+
+	///
+	///	パーティクル関連
+	///		
+
+	// 敵死亡時パーティクル描画
+	enemyDeadEmitter_.Draw(viewProjection_);
 
 	// 3Dオブジェクト描画後処理
 	Model::PostDraw();
@@ -996,15 +1029,15 @@ void GameScene::DrawScoreToResult() {
 
 void GameScene::InitializeParameterWAVE1() {
 	// WAVE1での各パラメーターを設定
-	playerAttackDamage_ = 0.01f;
+	playerAttackDamage_ = 0.013f;
 	enemyAttackDamage_ = 0.008f;
-	enemySpawnRate_ = 180;
+	enemySpawnRate_ = 240;
 	enemyFallSpeed_ = 0.05f;
 }
 
 void GameScene::InitializeParameterWAVE2() {
 	// WAVE2での各パラメーターを設定
-	playerAttackDamage_ = 0.01f;
+	playerAttackDamage_ = 0.013f;
 	enemyAttackDamage_ = 0.008f;
 	enemySpawnRate_ = 180;
 	enemyFallSpeed_ = 0.05f;
@@ -1012,8 +1045,8 @@ void GameScene::InitializeParameterWAVE2() {
 
 void GameScene::InitializeParameterWAVE3() {
 	// WAVE3での各パラメーターを設定
-	playerAttackDamage_ = 0.01f;
+	playerAttackDamage_ = 0.013f;
 	enemyAttackDamage_ = 0.008f;
-	enemySpawnRate_ = 180;
+	enemySpawnRate_ = 100;
 	enemyFallSpeed_ = 0.05f;
 }

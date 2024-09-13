@@ -67,7 +67,7 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 
 	// レーザー射撃中/非射撃中の自動上昇・下降の速度の初期値を設定（ImGuiでいじれるように）
 	autoAscendingSpeed_ = 0.1f;
-	autoDescendingSpeed_ = 0.25f;
+	autoDescendingSpeed_ = 0.2f;
 
 	// 現在の下降速度
 	currentDescendingSpeed_ = 0.0f;

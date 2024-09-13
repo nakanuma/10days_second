@@ -113,6 +113,8 @@
     <ClCompile Include="Easing.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="EnemyAppearMark.cpp" />
+    <ClCompile Include="EnemyDeadEmitter.cpp" />
+    <ClCompile Include="EnemyDeadParticle.cpp" />
     <ClCompile Include="Laser.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="math\Matrix4x4.cpp" />
@@ -149,6 +151,8 @@
     <ClInclude Include="Easing.h" />
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="EnemyAppearMark.h" />
+    <ClInclude Include="EnemyDeadEmitter.h" />
+    <ClInclude Include="EnemyDeadParticle.h" />
     <ClInclude Include="input\Input.h" />
     <ClInclude Include="Laser.h" />
     <ClInclude Include="math\Matrix4x4.h" />
