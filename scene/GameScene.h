@@ -312,6 +312,8 @@ private: // メンバ変数
 	bool isTitleSelect_ = false;
 	// プレタイトルセレクト
 	bool isPreTitleSelect_ = false;
+	// クリアフラグ
+	bool isClear_ = false;
 
 	///
 	///	パーティクルについて

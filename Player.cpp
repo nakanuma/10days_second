@@ -416,6 +416,17 @@ void Player::CheckIsAlive() {
 	}
 }
 
+void Player::StopSound(bool isClear) {
+
+	if (isClear) {
+		// サウンドが再生中なら停止
+		if (isLaserSoundPlaying_) {
+			audio_->StopWave(laserPlaySH_);
+			isLaserSoundPlaying_ = false;
+		}
+	}
+}
+
 void Player::Draw(ViewProjection& viewProjection) {
 	///
 	///	プレイヤー本体描画

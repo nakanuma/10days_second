@@ -79,6 +79,8 @@ public:
 	int32_t GetInvincibleCount() { return invincibleCount_; }
 	// 生存フラグの取得
 	bool IsAlive() { return isAlive_; }
+	// クリア時にサウンドを止める処理
+	void StopSound(bool isClear);
 
 private:
 	///

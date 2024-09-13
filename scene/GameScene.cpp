@@ -301,8 +301,10 @@ void GameScene::Update() {
 
 		player_->Update();
 
+		player_->StopSound(isClear_);
+
 		///
-		///	敵関連の更新
+		///	敵の更新
 		///
 
 		// 敵全て
@@ -1169,6 +1171,7 @@ void GameScene::GameSceneFlow() {
 		if (!isPlayclearSH_) {
 			audio_->PlayWave(clearSH_);
 			isPlayclearSH_ = true;
+			isClear_ = true;
 		}
 	}
 
