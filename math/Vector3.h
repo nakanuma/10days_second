@@ -30,6 +30,8 @@ struct Vector3 final {
 	///	基本的な関数
 	/// 
 
+	// スカラー倍
+	static Vector3 Multiply(float scalar, const Vector3& v);
 	// 長さ
 	static float Length(const Vector3& v);
 	// 正規化

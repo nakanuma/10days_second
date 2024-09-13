@@ -104,6 +104,6 @@ private: // メンバ変数
 	UINT windowStyle_;
 	bool isFullscreen_ = false;
 	RECT windowRect_;
-	SizeChangeMode sizeChangeMode_ = SizeChangeMode::kNormal;
+	SizeChangeMode sizeChangeMode_ = SizeChangeMode::kFixedAspect;
 	float aspectRatio_;
 };
