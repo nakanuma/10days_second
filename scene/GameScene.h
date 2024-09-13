@@ -10,9 +10,9 @@
 #include "WinApp.h"
 #include "WorldTransform.h"
 
-#include <list>
 #include <cstdlib>
 #include <ctime>
+#include <list>
 #include <memory>
 
 // MyClass
@@ -108,6 +108,11 @@ public: // メンバ関数
 	void ShowResult();
 
 	/// <summary>
+	/// タイトルシーンに戻る処理
+	/// </summary>
+	void ReturnTitleScene();
+
+	/// <summary>
 	/// 秒をフレームに変換
 	/// </summary>
 	int32_t SecToFrame(int32_t Second) { return Second * 60; }
@@ -128,6 +133,10 @@ public: // メンバ関数
 	/// 終了フラグの取得
 	/// </summary>
 	bool GetIsFinished();
+	/// <summary>
+	/// タイトル画面への移動取得
+	/// </summary>
+	bool GetIsSelectTitle();
 
 	// Behavior 型を文字列に変換する関数
 	// Behavior 型を文字列に変換する関数
@@ -239,6 +248,8 @@ private: // メンバ変数
 	bool isPlayclearSH_ = false;
 	// サウンド再生フラグ
 	bool isPlayGameoverSH_ = false;
+	// クリックサウンド
+	uint32_t clickSH_ = 0;
 
 	/*--------------------*/
 	/* リザルトで使用するもの */
@@ -297,10 +308,14 @@ private: // メンバ変数
 
 	// 終了フラグ
 	bool isFinished_ = false;
+	// タイトルセレクト
+	bool isTitleSelect_ = false;
+	// プレタイトルセレクト
+	bool isPreTitleSelect_ = false;
 
 	///
 	///	パーティクルについて
-	///		
+	///
 
 	// 使用するモデル
 	Model* modelParticle_ = nullptr;
@@ -309,7 +324,7 @@ private: // メンバ変数
 
 	///
 	///	カメラのシェイクに使用する
-	///		
+	///
 
 	float shakeAmountX_ = 0.0f;
 	float shakeAmountY_ = 0.0f;
@@ -326,7 +341,7 @@ private: // メンバ変数
 	///
 
 	float playerAttackDamage_ = 0.013f; // デフォルト値
-	float enemyAttackDamage_ = 0.008f; // デフォルト値
-	int32_t enemySpawnRate_ = 180;     // デフォルト値(frame)
-	float enemyFallSpeed_ = 0.05f;     // デフォルト値
+	float enemyAttackDamage_ = 0.008f;  // デフォルト値
+	int32_t enemySpawnRate_ = 180;      // デフォルト値(frame)
+	float enemyFallSpeed_ = 0.05f;      // デフォルト値
 };

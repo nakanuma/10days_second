@@ -151,6 +151,15 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				// シーンの生成と初期化
 				selectScene = new SelectScene();
 				selectScene->Initialize();
+			} else if (gameScene->GetIsSelectTitle()) {
+				// シーン変更
+				scene = Scene::kTitle;
+				// 旧シーンの開放
+				delete gameScene;
+				gameScene = nullptr;
+				// シーンの生成と初期化
+				titleScene = new TitleScene();
+				titleScene->Initialize();
 			}
 		}
 	};

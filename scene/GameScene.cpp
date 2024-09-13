@@ -231,6 +231,8 @@ void GameScene::Initialize() {
 	clearSH_ = audio_->LoadWave("./Resources/sounds/SE_clear.wav");
 	// ゲームオーバーサウンド
 	gameoverSH_ = audio_->LoadWave("./Resources/sounds/SE_gameover.wav");
+	// クリックサウンド
+	clickSH_ = audio_->LoadWave("./Resources/sounds/SE_click.wav");
 
 	///
 	///	その他
@@ -510,11 +512,15 @@ void GameScene::Update() {
 	case Phase::kFadeOut:
 
 		if (fade_->IsFinished()) {
-			isFinished_ = true;
+			if (!isPreTitleSelect_) {
+				isFinished_ = true;
+			} else {
+				isTitleSelect_ = true;
+			}
 		}
-		if (!isPlayGameoverSH_) {
+		if (isPlayGameoverSH_) {
 			audio_->PlayWave(gameoverSH_);
-			isPlayGameoverSH_ = true;
+			isPlayGameoverSH_ = false;
 		}
 		break;
 	}
@@ -528,6 +534,9 @@ void GameScene::Update() {
 
 	// 敵死亡時パーティクル更新
 	enemyDeadEmitter_.Update();
+
+	// タイトルに戻る
+	ReturnTitleScene();
 
 	///
 	///	デバッグ情報
@@ -775,6 +784,8 @@ void GameScene::CheckPlayerAlive() {
 		modelDeathParticle_.reset(Model::CreateFromOBJ("deathParticle", true));
 		// デスパーティクルの初期化
 		deathParticles_->Initialize(modelDeathParticle_.get(), &viewProjection_, deathParticlesPosition);
+		// 死亡サウンドを流すかのフラグ
+		isPlayGameoverSH_ = true;
 	}
 }
 
@@ -1256,6 +1267,35 @@ void GameScene::ShowResult() {
 	}
 }
 
+void GameScene::ReturnTitleScene() {
+
+	XINPUT_STATE joyState;
+
+	XINPUT_STATE joyPreState;
+
+	// ゲームパッド未接続なら何もせず抜ける
+	if (!Input::GetInstance()->GetJoystickState(0, joyState)) {
+		return;
+	}
+
+	if (!Input::GetInstance()->GetJoystickStatePrevious(0, joyPreState)) {
+		return;
+	}
+
+	// Xボタンを押したらタイトルへ
+	if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_X) {
+		if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_X)) {
+			// サウンド再生
+			audio_->PlayWave(clickSH_);
+			// タイトルセレクトをtrueに
+			isPreTitleSelect_ = true;
+			// フェード切り替え
+			phase_ = Phase::kFadeOut;
+			fade_->Start(Fade::Status::FadeOut, fadeTimer_);
+		}
+	}
+}
+
 void GameScene::DrawScoreToResult() {
 	int32_t scoreDigit[6];                   // 各桁の数字を格納
 	int32_t scoreTemp = player_->GetScore(); // 現在のスコアを一時的に保存
@@ -1312,3 +1352,5 @@ void GameScene::CameraShake(float amount, int32_t duration) {
 }
 
 bool GameScene::GetIsFinished() { return isFinished_; }
+
+bool GameScene::GetIsSelectTitle() { return isTitleSelect_; }
