@@ -11,6 +11,8 @@
 #include "WinApp.h"
 
 #include <list>
+#include <cstdlib>
+#include <ctime>
 
 // MyClass
 #include "Player.h"
@@ -219,6 +221,20 @@ private: // メンバ変数
 	Model* modelParticle_ = nullptr;
 	// エミッター
 	EnemyDeadEmitter enemyDeadEmitter_;
+
+	///
+	///	カメラのシェイクに使用する
+	///		
+
+	float shakeAmountX_ = 0.0f;
+	float shakeAmountY_ = 0.0f;
+	int32_t shakeDuration_ = 0;     // シェイクの持続時間
+	int32_t shakeTimer_ = 0;        // 現在のシェイク時間
+	float shakeDecaySpeed_ = 0.05f; // シェイク減衰速度
+	bool isShake_ = false;
+	Vector2 originalPosition_;
+
+	void CameraShake(float amount, int32_t duration);
 
 	///
 	///	調整可能項目

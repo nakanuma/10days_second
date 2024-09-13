@@ -9,7 +9,9 @@
 // MyClass
 #include "Easing.h"
 
-GameScene::GameScene() {}
+GameScene::GameScene() {
+	srand(static_cast<unsigned>(time(0))); // 乱数の初期化
+}
 
 GameScene::~GameScene() {
 	/* 各種開放 */
@@ -49,7 +51,7 @@ GameScene::~GameScene() {
 
 	///
 	///	パーティクル用モデル
-	///		
+	///
 
 	delete modelParticle_;
 
@@ -208,7 +210,7 @@ void GameScene::Initialize(int32_t startWave) {
 
 	///
 	///	パーティクル
-	///		
+	///
 
 	modelParticle_ = Model::CreateFromOBJ("particle", true);
 	enemyDeadEmitter_.Initialize(modelParticle_);
@@ -260,7 +262,6 @@ void GameScene::Update() {
 		if (enemy->IsDead()) {
 			enemyDeadEmitter_.Emit(enemy->GetWorldPosition());
 		}
-
 	}
 	// 死んだ敵をリストから削除
 	enemies_.remove_if([](Enemy* enemy) {
@@ -371,6 +372,43 @@ void GameScene::Update() {
 	}
 
 	///
+	///	シェイクを行う
+	///
+
+	// ゴリ押しでプレイヤー被弾時に一回だけシェイクを行う
+	if (player_->IsInvincible() && player_->GetInvincibleCount() == 118) {
+		CameraShake(2.0f, 180);
+	}
+
+	if (shakeTimer_ == shakeDuration_) {
+		originalPosition_.x = viewProjection_.translation_.x;
+		originalPosition_.y = viewProjection_.translation_.y;
+	}
+
+	if (shakeTimer_ > 0) {
+		// ランダムにXとYに値を加算
+		float offsetX = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * shakeAmountX_;
+		float offsetY = (static_cast<float>(rand()) / RAND_MAX - 0.5f) * shakeAmountY_;
+
+		viewProjection_.translation_.x = originalPosition_.x + offsetX;
+		viewProjection_.translation_.y = originalPosition_.y + offsetY;
+
+		// シェイク効果を徐々に減少させる（イージングを適用）
+		float t = static_cast<float>(shakeTimer_) / static_cast<float>(shakeDuration_);
+		float easeFactor = t * t * (3.0f - 2.0f * t); // スムーズステップ (SmoothStep)
+		shakeAmountX_ *= easeFactor;
+		shakeAmountY_ *= easeFactor;
+
+		// タイマーを更新
+		shakeTimer_--;
+	} else {
+		// シェイクが終了したら徐々に元の位置に戻る
+		viewProjection_.translation_.x = originalPosition_.x;
+		viewProjection_.translation_.y = originalPosition_.y;
+	}
+	viewProjection_.UpdateMatrix();
+
+	///
 	///	プレイヤーの体力が0になったらフェードしてセレクトへ戻る
 	///
 
@@ -386,7 +424,7 @@ void GameScene::Update() {
 
 	///
 	///	パーティクル関連更新
-	/// 
+	///
 
 	// 敵死亡時パーティクル更新
 	enemyDeadEmitter_.Update();
@@ -455,7 +493,7 @@ void GameScene::Draw() {
 
 	///
 	///	パーティクル関連
-	///		
+	///
 
 	// 敵死亡時パーティクル描画
 	enemyDeadEmitter_.Draw(viewProjection_);
@@ -587,6 +625,16 @@ void GameScene::Debug() {
 	if (ImGui::Button("AddScore")) {
 		player_->AddScore(200);
 	}
+
+	// ビュープロジェクションの表示
+	ImGui::DragFloat3("viewProjection.translation", &viewProjection_.translation_.x, 0.01f);
+	viewProjection_.UpdateMatrix();
+
+	ImGui::DragFloat("amountX", &shakeAmountX_);
+	ImGui::DragFloat("amountY", &shakeAmountY_);
+	ImGui::DragInt("duration", &shakeDuration_);
+	ImGui::DragInt("timer", &shakeTimer_);
+	ImGui::Text("isShake : %d", isShake_);
 
 	ImGui::End();
 }
@@ -1064,4 +1112,11 @@ void GameScene::InitializeParameterWAVE3() {
 	enemyAttackDamage_ = 0.008f;
 	enemySpawnRate_ = 100;
 	enemyFallSpeed_ = 0.05f;
+}
+
+void GameScene::CameraShake(float amount, int32_t duration) {
+	shakeAmountX_ = amount;
+	shakeAmountY_ = amount;
+	shakeDuration_ = duration;
+	shakeTimer_ = duration;
 }

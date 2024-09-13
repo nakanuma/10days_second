@@ -67,6 +67,10 @@ public:
 	void ResetScore() { score_ = 0; }
 	// HPのリセット（WAVE移行時に呼ぶ）
 	void ResetHP() { hp_ = 3; }
+	// 現在が無敵かどうか取得
+	bool IsInvincible() { return isInvincible_; }
+	// 残り無敵時間を取得
+	int32_t GetInvincibleCount() { return invincibleCount_; }
 
 private:
 	///
