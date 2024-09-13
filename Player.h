@@ -189,7 +189,8 @@ private:
 	// 攻撃を受けたときのサウンド
 	uint32_t hitSH_ = 0;
 	// レーザーを発射しているときのサウンド
-	uint32_t laserSH_ = 0;
+	uint32_t laserAudioSH_ = 0;
+	uint32_t laserPlaySH_ = 0;
 	// 
 	bool isLaserSoundPlaying_ = false;
 };

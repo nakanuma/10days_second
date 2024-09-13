@@ -123,7 +123,8 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 	// 被弾時サウンド
 	hitSH_ = audio_->LoadWave("./Resources/sounds/SE_player_damage.wav");
 	// レーザー発射時サウンド
-	laserSH_ = audio_->LoadWave("./Resources/sounds/SE_player_laser.wav");
+	laserAudioSH_ = audio_->LoadWave("./Resources/sounds/SE_player_laser.wav");
+	// laserPlaySH_ = audio_->PlayWave(laserAudioSH_);
 }
 
 void Player::Update() {
@@ -243,7 +244,7 @@ void Player::Move() {
 	///	射撃中のレーザーのON/OFFによって、自動で上昇と下降を行う
 	///
 
-	// レーザーが有効な場合、自動で上昇 
+	// レーザーが有効な場合、自動で上昇
 	if (laser_.IsActive()) {
 		worldTransform_.translation_.y += autoAscendingSpeed_;
 		currentDescendingSpeed_ = 0.0f; // 上昇中は下降速度をリセット
@@ -332,10 +333,11 @@ void Player::Attack() {
 		laser_.Initialize(modelLaser_, worldTransform_.translation_, worldTransform_.rotation_, Vector3{Laser::kLength, worldTransform_.scale_.y, worldTransform_.scale_.z});
 
 		// サウンドが再生されていない場合のみ再生
-		/*if (!isLaserSoundPlaying_) {
-			audio_->PlayWave(laserSH_, true);
+		if (!isLaserSoundPlaying_) {
+			//audio_->PlayWave(laserPlaySH_, true);
+			laserPlaySH_ = audio_->PlayWave(laserAudioSH_);
 			isLaserSoundPlaying_ = true;
-		}*/
+		}
 
 		///
 		///	押されている間は予備動作レーザーを更新
@@ -358,10 +360,10 @@ void Player::Attack() {
 		laser_.SetActive(false);
 
 		// サウンドが再生中なら停止
-		/*if (isLaserSoundPlaying_) {
-			audio_->StopWave(laserSH_);
+		if (isLaserSoundPlaying_) {
+			audio_->StopWave(laserPlaySH_);
 			isLaserSoundPlaying_ = false;
-		}*/
+		}
 
 		// 予備動作レーザーの情報を初期状態にリセット
 		anticWorldTransform_.scale_ = {Laser::kLength, 0.05f, 0.05f};
