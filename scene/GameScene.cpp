@@ -155,7 +155,7 @@ void GameScene::Initialize() {
 	spriteWaveNum_->SetAnchorPoint({0.5f, 0.5f}); // アンカーポイントを中心に設定
 
 	/* 背景 */
-	spriteBackGround_ = Sprite::Create(textureWhite1x1, {0.0f, 0.0f});
+	spriteBackGround_ = Sprite::Create(textureWhite1x1, {0.0f, 0.0f}, {0.5f, 0.5f, 0.5f, 1.0f});
 	spriteBackGround_->SetSize({1280.0f, 720.0f});
 
 	/* ゲーム領域ではない画面両側を隠すスプライト */
