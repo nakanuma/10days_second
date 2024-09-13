@@ -408,6 +408,11 @@ void Player::CheckIsAlive() {
 	// もしHPが0になったらフラグをfalseにする
 	if (hp_ <= 0) {
 		isAlive_ = false;
+		// サウンドが再生中なら停止
+		if (isLaserSoundPlaying_) {
+			audio_->StopWave(laserPlaySH_);
+			isLaserSoundPlaying_ = false;
+		}
 	}
 }
 

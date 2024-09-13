@@ -97,5 +97,10 @@ private:
 
 
 	// サウンド
-	uint32_t laserSE_ = 0;
+	uint32_t laserAudioSH_ = 0;
+	uint32_t laserPlaySH_ = 0;
+	// 一度だけ流す用のフラフ
+	bool isLaserSoundPlaying_ = false;
+	// 敵にレーザーが当たっているかのフラグ
+	bool isHitByLaser_ = false;
 };
