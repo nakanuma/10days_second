@@ -20,6 +20,7 @@
 #include "Enemy.h"
 #include "EnemyAppearMark.h"
 #include "Fade.h"
+#include "DeathParticles.h"
 
 class Wave;
 
@@ -34,6 +35,7 @@ public: // メンバ関数
 	enum class Phase {
 		kFadeIn,  // フェードイン
 		kMain,    // メイン部
+		kDeath,    // 死亡時
 		kFadeOut, // フェードアウト
 	};
 
@@ -197,13 +199,17 @@ private: // メンバ変数
 	Sprite* spriteResultText_ = nullptr;
 
 
-	// パーティクルのリスト
-	std::list<Particle*> particles_;
-
 	///
 	///	その他
-	/// 
+	///
 	
+	// 背景パーティクルのリスト
+	std::list<Particle*> particles_;
+	// 死亡時パーティクル
+	std::unique_ptr<DeathParticles> deathParticles_ = nullptr;
+	// モデル
+	std::unique_ptr<Model> modelDeathParticle_ = nullptr;
+
 	// ゲームシーン経過時間をカウント
 	int32_t gameTime_;
 	// 敵の生成頻度(フレーム)

@@ -265,6 +265,19 @@ void GameScene::Update() {
 		gameTime_++;
 
 		break;
+	case Phase::kDeath:
+		// デスパーティクル存在時のみ更新
+		if (deathParticles_) {
+			deathParticles_->Update();
+		}
+		// デスパーティクル消滅後画面遷移開始
+		if (deathParticles_->IsFinished()) {
+			phase_ = Phase::kFadeOut;
+
+			// フェードアウト開始
+			fade_->Start(Fade::Status::FadeOut, fadeTimer_);
+		}
+		break;
 	case Phase::kFadeOut:
 
 		if (fade_->IsFinished()) {
@@ -339,6 +352,10 @@ void GameScene::Draw() {
 	// 敵の出現マーク全て
 	for (EnemyAppearMark* mark : enemyAppearMarks_) {
 		mark->Draw(viewProjection_);
+	}
+
+	if (!player_->IsAlive()) {
+		deathParticles_->Draw();
 	}
 
 	// 3Dオブジェクト描画後処理
@@ -417,10 +434,23 @@ void GameScene::Debug() {
 
 void GameScene::CheckPlayerAlive() {
 
+	// if (!player_->IsAlive()) {
+	//	// フェード切り替え
+	//	phase_ = Phase::kFadeOut;
+	//	fade_->Start(Fade::Status::FadeOut, fadeTimer_);
+	// }
+
 	if (!player_->IsAlive()) {
-		// フェード切り替え
-		phase_ = Phase::kFadeOut;
-		fade_->Start(Fade::Status::FadeOut, fadeTimer_);
+		// 死亡演出フェーズに切り替え
+		phase_ = Phase::kDeath;
+		// 自キャラの座標を取得
+		const Vector3& deathParticlesPosition = player_->GetWorldPosition();
+		// デスパーティクルの生成
+		deathParticles_ = std::make_unique<DeathParticles>();
+		// 自キャラの3Dモデルの生成
+		modelDeathParticle_.reset(Model::CreateFromOBJ("deathParticle", true));
+		// デスパーティクルの初期化
+		deathParticles_->Initialize(modelDeathParticle_.get(), &viewProjection_, deathParticlesPosition);
 	}
 }
 
@@ -746,7 +776,7 @@ void GameScene::GameSceneFlow() {
 	///
 	///	150秒~ : 終了
 	///
-	
+
 	if (gameTime_ >= SecToFrame(150)) {
 		// フェード切り替え
 		phase_ = Phase::kFadeOut;
