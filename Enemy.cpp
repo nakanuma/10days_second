@@ -8,7 +8,10 @@
 
 Enemy::~Enemy() {}
 
-void Enemy::Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position, float radius, float fallSpeed) { 
+void Enemy::Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position, float radius, float fallSpeed) {
+
+	audio_ = Audio::GetInstance();
+
 	// メンバ変数にモデルを設定
 	assert(modelEnemy);
 	modelEnemy_ = modelEnemy;
@@ -41,6 +44,9 @@ void Enemy::Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position, f
 	// ワールドトランスフォームを更新しておく
 	worldTransform_.UpdateMatrix();
 	anticWorldTransform_.UpdateMatrix();
+
+	// サウンド
+	laserSE_ = audio_->LoadWave("./Resources/sounds/SE_enemy_laser.mp3");
 }
 
 void Enemy::Update() {

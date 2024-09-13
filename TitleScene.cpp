@@ -13,6 +13,7 @@ TitleScene::~TitleScene() {
 void TitleScene::Initialize() {
 
 	dxCommon_ = DirectXCommon::GetInstance();
+	audio_ = Audio::GetInstance();
 
 	///
 	/// テクスチャハンドル
@@ -33,6 +34,11 @@ void TitleScene::Initialize() {
 	sideSprite_[0].reset(Sprite::Create(sideTex_, {0, 0}));
 	sideSprite_[1].reset(Sprite::Create(sideTex_, {930, 0}));
 
+	///
+	/// サウンドハンドル
+	///
+
+	clickSH_ = audio_->LoadWave("./Resources/sounds/SE_click.wav");
 
 	// フェード
 	fade_ = std::make_unique<Fade>();
@@ -128,8 +134,8 @@ void TitleScene::Operation() {
 	// Aボタンを押したら終了
 	if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_A) {
 		if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
-			// 終了フラグをtrue
-			// isFinished_ = true;
+			// サウンド再生
+			audio_->PlayWave(clickSH_);
 			// フェード切り替え
 			phase_ = Phase::kFadeOut;
 			fade_->Start(Fade::Status::FadeOut, fadeTimer_);

@@ -6,6 +6,7 @@
 #include "TextureManager.h"
 #include "ViewProjection.h"
 #include "WorldTransform.h"
+#include "audio.h"
 
 #include "GameScene.h"
 #include "Particle.h"
@@ -61,6 +62,8 @@ public:
 private: // メンバ変数
 	// DirectX
 	DirectXCommon* dxCommon_ = nullptr;
+	// オーディオ
+	Audio* audio_ = nullptr;
 
 	// ビュープロジェクション
 	ViewProjection viewProjection_;
@@ -118,6 +121,15 @@ private: // メンバ変数
 	uint32_t waveSelectTex_ = 0;
 	// タイトルセレクト
 	uint32_t titleSelectTex_ = 0;
+
+
+	/*==================================================================================*/
+	// サウンドハンドル
+
+	// セレクトサウンド
+	uint32_t selectSH_ = 0;
+	// クリックサウンド
+	uint32_t clickSH_ = 0;
 
 
 	/*==================================================================================*/

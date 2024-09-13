@@ -7,6 +7,7 @@
 #include "Model.h"
 #include "ViewProjection.h"
 #include "WorldTransform.h"
+#include "Audio.h"
 #include <list>
 #include <vector>
 
@@ -81,6 +82,7 @@ private:
 	///
 
 	Input* input_ = nullptr;
+	Audio* audio_ = nullptr;
 
 	///
 	///	プレイヤーの基本的な情報
@@ -174,4 +176,16 @@ private:
 	Sprite* spriteScore_[6];
 	// 0~9までの数字が書いてある数字テクスチャ
 	uint32_t textureNumber_;
+
+
+	///
+	///	サウンド関連
+	///
+
+	// 攻撃を受けたときのサウンド
+	uint32_t hitSH_ = 0;
+	// レーザーを発射しているときのサウンド
+	uint32_t laserSH_ = 0;
+	// 
+	bool isLaserSoundPlaying_ = false;
 };

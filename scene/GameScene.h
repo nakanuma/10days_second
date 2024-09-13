@@ -220,6 +220,19 @@ private: // メンバ変数
 	Sprite* spriteScreenLeft_ = nullptr;
 	Sprite* spriteScreenRight_ = nullptr;
 
+	///
+	///	スプライト
+	///
+
+	// クリアサウンド
+	uint32_t clearSH_ = 0;
+	// ゲームオーバーサウンド
+	uint32_t gameoverSH_ = 0;
+	// サウンド再生フラグ
+	bool isPlayclearSH_ = false;
+	// サウンド再生フラグ
+	bool isPlayGameoverSH_ = false;
+
 	/*--------------------*/
 	/* リザルトで使用するもの */
 	/*--------------------*/

@@ -3,8 +3,8 @@
 #include <cassert>
 #include <numbers>
 
-#include "imgui.h"
 #include "TextureManager.h"
+#include "imgui.h"
 
 // MyClass
 #include "Easing.h"
@@ -12,11 +12,11 @@
 Player::~Player() {
 	///
 	///	各種開放
-	///		
-	
+	///
+
 	///
 	///	スプライト
-	/// 
+	///
 
 	/* ハート（HP） */
 	for (Sprite* sprite : heartSprites_) {
@@ -36,6 +36,8 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 
 	// 入力のインスタンス取得
 	input_ = Input::GetInstance();
+	// オーディオのインスタンス取得
+	audio_ = Audio::GetInstance();
 
 	///
 	///	プレイヤー情報の初期化
@@ -76,27 +78,27 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 	currentDescendingSpeed_ = 0.0f;
 
 	///
-	///	予備動作レーザー関連の初期化
-	/// 
-	
+	///	予備動作hpレーザー関連の初期化
+	///
+
 	// モデルを設定
 	assert(modelLaser);
 	modelLaser_ = modelLaser;
 
 	anticWorldTransform_.Initialize();
-	
+
 	Vector3 offset{0.0f, Laser::kLength, 0.0f};
 	anticWorldTransform_.translation_ = worldTransform_.translation_ + offset; // プレイヤーの座標 + オフセット
-	anticWorldTransform_.rotation_ = {0.0f, 0.0f, 1.57f}; // 最初は右向きなので上向きにする
-	anticWorldTransform_.scale_ = {Laser::kLength, 0.05f, 0.05f}; // 初期スケール
+	anticWorldTransform_.rotation_ = {0.0f, 0.0f, 1.57f};                      // 最初は右向きなので上向きにする
+	anticWorldTransform_.scale_ = {Laser::kLength, 0.05f, 0.05f};              // 初期スケール
 
 	// ワールドトランスフォームを更新しておく
 	anticWorldTransform_.UpdateMatrix();
 
 	///
 	///	スプライト生成
-	///		
-	
+	///
+
 	/* ハート（HP） */
 
 	// ハートのテクスチャ取得
@@ -114,6 +116,14 @@ void Player::Initialize(Model* modelPlayer, Model* modelLaser) {
 		spriteScore_[i]->SetSize({21.0f, 30.0f}); // 数字1文字分のサイズを指定
 	}
 
+	///
+	///	サウンド
+	///
+
+	// 被弾時サウンド
+	hitSH_ = audio_->LoadWave("./Resources/sounds/SE_player_damage.wav");
+	// レーザー発射時サウンド
+	laserSH_ = audio_->LoadWave("./Resources/sounds/SE_player_laser.wav");
 }
 
 void Player::Update() {
@@ -133,7 +143,7 @@ void Player::Update() {
 
 	///
 	///	予備動作レーザーの更新
-	///		
+	///
 
 	// 通常レーザーと予備動作レーザーの位置と回転角を一致させる
 	Vector3 offset = {Laser::kLength + 1.5f, 0.0f, 0.0f};
@@ -145,7 +155,7 @@ void Player::Update() {
 
 	///
 	///	無敵時間中（ダメージを受けた後）に行う処理
-	/// 
+	///
 
 	Invincible();
 
@@ -313,7 +323,7 @@ void Player::Attack() {
 	bool isLaserButtonPressed = (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_RIGHT_SHOULDER);
 
 	/*if (worldTransform_.translation_.y >= 16.0f) {
-		isLaserButtonPressed = false;
+	    isLaserButtonPressed = false;
 	}*/
 
 	// RBを押した場合
@@ -321,15 +331,21 @@ void Player::Attack() {
 		// レーザーの初期化
 		laser_.Initialize(modelLaser_, worldTransform_.translation_, worldTransform_.rotation_, Vector3{Laser::kLength, worldTransform_.scale_.y, worldTransform_.scale_.z});
 
+		// サウンドが再生されていない場合のみ再生
+		/*if (!isLaserSoundPlaying_) {
+			audio_->PlayWave(laserSH_, true);
+			isLaserSoundPlaying_ = true;
+		}*/
+
 		///
 		///	押されている間は予備動作レーザーを更新
-		/// 
+		///
 
 		StartAntic();
 
 		///
-		/// RBが押された瞬間（前フレームで押されていなかった場合）のみ、プレイヤーを上に跳ねさせる
-		/// 
+		/// RBが押された瞬間（前フレームで押されていなかった場合）のみ、プレイヤーを上に跳ねさせる跳ねさせる
+		///
 		if (!wasLaserButtonPressed_ && !isRising_ && worldTransform_.translation_.y <= 16.0f) { // あんまりにも上にいる時は跳ねさせない
 			isRising_ = true;
 			riseStartY_ = worldTransform_.translation_.y;
@@ -340,6 +356,12 @@ void Player::Attack() {
 		// 押していない場合はレーザーを無効化
 	} else {
 		laser_.SetActive(false);
+
+		// サウンドが再生中なら停止
+		/*if (isLaserSoundPlaying_) {
+			audio_->StopWave(laserSH_);
+			isLaserSoundPlaying_ = false;
+		}*/
 
 		// 予備動作レーザーの情報を初期状態にリセット
 		anticWorldTransform_.scale_ = {Laser::kLength, 0.05f, 0.05f};
@@ -371,6 +393,7 @@ void Player::Invincible() {
 void Player::OnCollision() {
 	// 現在が無敵じゃない場合のみ処理を行う
 	if (!isInvincible_) {
+		audio_->PlayWave(hitSH_);
 		hp_--;
 		// 無敵状態にする
 		isInvincible_ = true;
@@ -403,8 +426,8 @@ void Player::Draw(ViewProjection& viewProjection) {
 
 	///
 	///	レーザーの描画
-	/// 
-	
+	///
+
 	// 有効な場合かつ予備動作が終わった場合のみ描画
 	if (laser_.IsActive() && endAntic_) {
 		laser_.Draw(viewProjection);
@@ -412,7 +435,7 @@ void Player::Draw(ViewProjection& viewProjection) {
 
 	///
 	///	予備動作レーザーの描画
-	/// 
+	///
 
 	// 一旦常に描画
 	modelLaser_->Draw(anticWorldTransform_, viewProjection);
@@ -421,17 +444,17 @@ void Player::Draw(ViewProjection& viewProjection) {
 void Player::DrawUI() {
 	///
 	///	左上の残りHP（ハート）の描画
-	/// 
-	
+	///
+
 	for (int32_t i = 0; i < hp_; i++) {
 		heartSprites_[i]->Draw();
 	}
 
 	///
 	///	左上の現在スコアの描画
-	/// 
+	///
 
-	int32_t scoreDigit[6]; // 各桁の数字を格納
+	int32_t scoreDigit[6];      // 各桁の数字を格納
 	int32_t scoreTemp = score_; // 現在スコアを一時的に保存
 
 	// scoreDigitに現在スコアを格納
@@ -452,7 +475,6 @@ void Player::DrawUI() {
 		spriteScore_[i]->SetPosition(digitPosition);
 		spriteScore_[i]->Draw();
 	}
-
 }
 
 void Player::Debug() {
@@ -471,6 +493,8 @@ void Player::Debug() {
 	ImGui::Text("Score : %d", score_);
 	ImGui::DragFloat("AscendingSpeed", &autoAscendingSpeed_, 0.01f);
 	ImGui::DragFloat("DescendingSpeed", &autoDescendingSpeed_, 0.01f);
+
+	ImGui::Text("Laser %d", isLaserSoundPlaying_);
 
 	ImGui::End();
 

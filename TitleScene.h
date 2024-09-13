@@ -6,6 +6,7 @@
 #include "TextureManager.h"
 #include "ViewProjection.h"
 #include "WorldTransform.h"
+#include "Audio.h"
 
 #include "Fade.h"
 #include "Particle.h"
@@ -56,6 +57,7 @@ public:
 
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
+	Audio* audio_ = nullptr;
 
 	// 終了フラグ
 	bool isFinished_ = false;
@@ -103,10 +105,12 @@ private: // メンバ変数
 	/// スプライト座標
 	///
 
-	// 背景
-	Vector2 bgPos_ = {};
 	// タイトルロゴ
 	Vector2 logoPos_ = {};
-	// スタートボタン
-	Vector2 startButtonPos_ = {};
+
+	///
+	/// サウンドハンドル
+	///
+
+	uint32_t clickSH_ = 0;
 };

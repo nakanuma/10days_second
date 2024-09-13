@@ -8,10 +8,10 @@
 
 #include <wrl.h>
 
+#include "GameScene.h"
+#include "SelectScene.h"
 #include "TitleScene.h"
 #include "TutorialScene.h"
-#include "SelectScene.h"
-#include "GameScene.h"
 
 // シーン
 enum class Scene {
@@ -64,6 +64,12 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 	// オーディオの初期化
 	audio = Audio::GetInstance();
 	audio->Initialize();
+
+	// BGMハンドル
+	uint32_t bgmSH_ = audio->LoadWave("./Resources/sounds/BGM.wav");
+
+	// BGM再生
+	audio->PlayWave(bgmSH_, true);
 
 	// テクスチャマネージャの初期化
 	TextureManager::GetInstance()->Initialize(dxCommon->GetDevice());
@@ -124,8 +130,7 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 				// シーンの生成と初期化
 				gameScene = new GameScene();
 				gameScene->Initialize();
-			}
-			else if (selectScene->GetIsSelectTitle()) {
+			} else if (selectScene->GetIsSelectTitle()) {
 				// シーン変更
 				scene = Scene::kTitle;
 				// 旧シーンの開放
@@ -200,24 +205,19 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		// 軸表示の更新
 		axisIndicator->Update();
 
-
 		// シーン切り替え
 		ChangeScene();
 		// 現在シーンの更新
 		UpdateScene();
 
-
 		// ImGui受付終了
 		imguiManager->End();
-
 
 		// 描画開始
 		dxCommon->PreDraw();
 
-
 		// 現在シーンの描画
 		DrawScene();
-
 
 		// 軸表示の描画
 		axisIndicator->Draw();

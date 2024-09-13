@@ -23,6 +23,7 @@ SelectScene::~SelectScene() {
 void SelectScene::Initialize() {
 
 	dxCommon_ = DirectXCommon::GetInstance();
+	audio_ = Audio::GetInstance();
 
 	// ビュープロジェクションの初期化
 	viewProjection_.Initialize();
@@ -48,6 +49,13 @@ void SelectScene::Initialize() {
 	leftArrowTex_ = TextureManager::Load("./Resources/images/select/select_left_arrow.png");
 	waveSelectTex_ = TextureManager::Load("./Resources/images/select/select_waveselect.png");
 	titleSelectTex_ = TextureManager::Load("./Resources/images/select/select_titleback.png");
+
+	///
+	/// テクスチャハンドル
+	///
+
+	selectSH_ = audio_->LoadWave("./Resources/sounds/SE_select.wav");
+	clickSH_ = audio_->LoadWave("./Resources/sounds/SE_click.wav");
 
 	///
 	/// 2Dスプライト
@@ -227,6 +235,8 @@ void SelectScene::Operation() {
 		// 右ボタンを押したら移動
 		if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) {
 			if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)) {
+				// サウンド再生
+				audio_->PlayWave(selectSH_);
 				stage_ = Stage::kSeconsd;
 				for (int i = 0; i < 3; i++) {
 					boxWorldTransform_[i].translation_.x -= 15.0f;
@@ -237,6 +247,8 @@ void SelectScene::Operation() {
 		// Aボタンを押したら選択
 		if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_A) {
 			if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
+				// サウンド再生
+				audio_->PlayWave(clickSH_);
 				// フェード切り替え
 				phase_ = Phase::kFadeOut;
 				fade_->Start(Fade::Status::FadeOut, fadeTimer_);
@@ -254,6 +266,8 @@ void SelectScene::Operation() {
 		// 左ボタンを押したら移動
 		if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) {
 			if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)) {
+				// サウンド再生
+				audio_->PlayWave(selectSH_);
 				stage_ = Stage::kFirst;
 				for (int i = 0; i < 3; i++) {
 					boxWorldTransform_[i].translation_.x += 15.0f;
@@ -263,6 +277,8 @@ void SelectScene::Operation() {
 		// 右ボタンを押したら移動
 		if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT) {
 			if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_RIGHT)) {
+				// サウンド再生
+				audio_->PlayWave(selectSH_);
 				stage_ = Stage::kThird;
 				for (int i = 0; i < 3; i++) {
 					boxWorldTransform_[i].translation_.x -= 15.0f;
@@ -273,6 +289,8 @@ void SelectScene::Operation() {
 		// Aボタンを押したら選択
 		if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_A) {
 			if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
+				// サウンド再生
+				audio_->PlayWave(clickSH_);
 				// フェード切り替え
 				phase_ = Phase::kFadeOut;
 				fade_->Start(Fade::Status::FadeOut, fadeTimer_);
@@ -290,6 +308,8 @@ void SelectScene::Operation() {
 		// 左ボタンを押したら移動
 		if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT) {
 			if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_DPAD_LEFT)) {
+				// サウンド再生
+				audio_->PlayWave(selectSH_);
 				stage_ = Stage::kSeconsd;
 				for (int i = 0; i < 3; i++) {
 					boxWorldTransform_[i].translation_.x += 15.0f;
@@ -300,6 +320,8 @@ void SelectScene::Operation() {
 		// Aボタンを押したら選択
 		if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_A) {
 			if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_A)) {
+				// サウンド再生
+				audio_->PlayWave(clickSH_);
 				// フェード切り替え
 				phase_ = Phase::kFadeOut;
 				fade_->Start(Fade::Status::FadeOut, fadeTimer_);
@@ -320,6 +342,8 @@ void SelectScene::Operation() {
 	// Xボタンを押したらタイトルへ
 	if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_X) {
 		if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_X)) {
+			// サウンド再生
+			audio_->PlayWave(clickSH_);
 			// タイトルセレクトをtrueに
 			isPreTitleSelect_ = true;
 			// フェード切り替え

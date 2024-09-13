@@ -199,6 +199,15 @@ void GameScene::Initialize() {
 	}
 
 	///
+	///	サウンド生成
+	///
+
+	// クリアサウンド
+	clearSH_ = audio_->LoadWave("./Resources/sounds/SE_clear.wav");
+	// ゲームオーバーサウンド
+	gameoverSH_ = audio_->LoadWave("./Resources/sounds/SE_gameover.wav");
+
+	///
 	///	その他
 	///
 
@@ -341,9 +350,9 @@ void GameScene::Update() {
 		///
 
 		/*WAVE1の場合*/
-		//uint32_t w1s1score = 200;  // このスコアに達してたら星1
-		//uint32_t w1s2score = 600;  // このスコアに達してたら星2
-		//uint32_t w1s3score = 1000; // このスコアに達してたら星3
+		// uint32_t w1s1score = 200;  // このスコアに達してたら星1
+		// uint32_t w1s2score = 600;  // このスコアに達してたら星2
+		// uint32_t w1s3score = 1000; // このスコアに達してたら星3
 
 		if (gameTime_ >= SecToFrame(45) && gameTime_ <= SecToFrame(50)) {
 			// 星1個の場合
@@ -363,9 +372,9 @@ void GameScene::Update() {
 		}
 
 		/*WAVE2の場合*/
-		//uint32_t w2s1score = 200;  // このスコアに達してたら星1
-		//uint32_t w2s2score = 600;  // このスコアに達してたら星2
-		//uint32_t w2s3score = 1000; // このスコアに達してたら星3
+		// uint32_t w2s1score = 200;  // このスコアに達してたら星1
+		// uint32_t w2s2score = 600;  // このスコアに達してたら星2
+		// uint32_t w2s3score = 1000; // このスコアに達してたら星3
 		if (gameTime_ >= SecToFrame(95) && gameTime_ <= SecToFrame(100)) {
 			// 星1個の場合
 			if (player_->GetScore() >= w2s1score && player_->GetScore() < w2s2score) {
@@ -383,10 +392,6 @@ void GameScene::Update() {
 			}
 		}
 
-		/*WAVE3の場合*/
-		//uint32_t w3s1score = 200;  // このスコアに達してたら星1
-		//uint32_t w3s2score = 600;  // このスコアに達してたら星2
-		//uint32_t w3s3score = 1000; // このスコアに達してたら星3
 		if (gameTime_ >= SecToFrame(145) && gameTime_ <= SecToFrame(150)) {
 			// 星1個の場合
 			if (player_->GetScore() >= w3s1score && player_->GetScore() < w3s2score) {
@@ -439,6 +444,10 @@ void GameScene::Update() {
 
 		if (fade_->IsFinished()) {
 			isFinished_ = true;
+		}
+		if (!isPlayGameoverSH_) {
+			audio_->PlayWave(gameoverSH_);
+			isPlayGameoverSH_ = true;
 		}
 		break;
 	}
@@ -614,7 +623,6 @@ void GameScene::Draw() {
 
 	player_->DrawUI();
 
-
 	///
 	/// フェードの描画
 	///
@@ -649,6 +657,8 @@ void GameScene::Debug() {
 
 	// 現在の Behavior を表示
 	ImGui::Text("Current Phase: %s", BehaviorToString(phase_));
+
+	ImGui::Text("gameoverSound %d", isPlayGameoverSH_);
 
 	ImGui::End();
 
@@ -941,6 +951,10 @@ void GameScene::GameSceneFlow() {
 	///
 
 	if (gameTime_ >= SecToFrame(45) && gameTime_ <= SecToFrame(50)) {
+		if (!isPlayclearSH_) {
+			audio_->PlayWave(clearSH_);
+			isPlayclearSH_ = true;
+		}
 		ShowResult();
 	}
 
@@ -958,6 +972,7 @@ void GameScene::GameSceneFlow() {
 		displayStarNum_ = 0;
 		// WAVE2でのパラメーター設定初期化を呼ぶ
 		InitializeParameterWAVE2();
+		isPlayclearSH_ = false;
 	}
 
 	///
@@ -992,6 +1007,10 @@ void GameScene::GameSceneFlow() {
 	///
 
 	if (gameTime_ >= SecToFrame(95) && gameTime_ <= SecToFrame(100)) {
+		if (!isPlayclearSH_) {
+			audio_->PlayWave(clearSH_);
+			isPlayclearSH_ = true;
+		}
 		ShowResult();
 	}
 
@@ -1009,6 +1028,7 @@ void GameScene::GameSceneFlow() {
 		displayStarNum_ = 0;
 		// WAVE3でのパラメーター設定初期化を呼ぶ
 		InitializeParameterWAVE3();
+		isPlayclearSH_ = false;
 	}
 
 	///
@@ -1044,6 +1064,10 @@ void GameScene::GameSceneFlow() {
 
 	if (gameTime_ >= SecToFrame(145) && gameTime_ <= SecToFrame(150)) {
 		ShowResult();
+		if (!isPlayclearSH_) {
+			audio_->PlayWave(clearSH_);
+			isPlayclearSH_ = true;
+		}
 	}
 
 	///
