@@ -159,6 +159,10 @@ private: // メンバ変数
 	Sprite* spriteScreenLeft_ = nullptr;
 	Sprite* spriteScreenRight_ = nullptr;
 
+	// 画面右側に表示する操作説明 & 文字
+	Sprite* spriteControl_ = nullptr;
+	Sprite* spriteBackText_ = nullptr;
+
 	/*--------------------*/
 	/* リザルトで使用するもの */
 	/*--------------------*/

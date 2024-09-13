@@ -88,6 +88,9 @@ GameScene::~GameScene() {
 	}
 
 	delete spriteRemainingTimeText_;
+
+	delete spriteControl_;
+	delete spriteBackText_;
 }
 
 void GameScene::Initialize(int32_t startWave) {
@@ -150,6 +153,13 @@ void GameScene::Initialize(int32_t startWave) {
 	spriteScreenLeft_->SetSize({350.0f, 720.0f});
 	spriteScreenRight_ = Sprite::Create(textureWhite1x1, {930.0f, 0.0f}, {0.0f, 0.0f, 0.0f, 1.0f});
 	spriteScreenRight_->SetSize({350.0f, 720.0f});
+
+	// 画面右に表示する操作説明
+	uint32_t textureControl = TextureManager::Load("images/control.png");
+	spriteControl_ = Sprite::Create(textureControl, {965.0f, 0.0f});
+	// Xボタンでタイトルへ
+	uint32_t textureTitleBack = TextureManager::Load("images/select_titleBack.png");
+	spriteBackText_ = Sprite::Create(textureTitleBack, {955.0f, 650.0f});
 
 	/* リザルト関連 */
 
@@ -512,6 +522,11 @@ void GameScene::Draw() {
 	spriteScreenLeft_->Draw();
 	// 右側
 	spriteScreenRight_->Draw();
+
+	// 操作説明を描画
+	spriteControl_->Draw();
+	// Xボタンでタイトルへ
+	spriteBackText_->Draw();
 
 	///
 	///	残り時間の描画について
