@@ -533,7 +533,7 @@ void GameScene::Update() {
 	///	デバッグ情報
 	///
 
-	Debug();
+	/*Debug();*/
 }
 
 void GameScene::Draw() {

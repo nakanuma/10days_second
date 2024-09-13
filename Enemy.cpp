@@ -128,7 +128,7 @@ void Enemy::Update() {
 	///	デバッグ表示
 	///
 
-	Debug();
+	/*Debug();*/
 }
 
 void Enemy::StartAntic() {

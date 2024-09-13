@@ -177,7 +177,7 @@ void Player::Update() {
 	/// デバッグ表示
 	///
 
-	Debug();
+	/*Debug();*/
 }
 
 void Player::Move() {
