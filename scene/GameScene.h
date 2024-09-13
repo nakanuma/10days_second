@@ -12,6 +12,7 @@
 
 #include <list>
 #include <cstdlib>
+#include <cstdint>
 #include <ctime>
 #include <memory>
 

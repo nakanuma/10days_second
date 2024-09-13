@@ -307,7 +307,7 @@ void GameScene::Update() {
 		for (Enemy* enemy : enemies_) {
 			enemy->Update();
 
-		// 空中にいる敵が死んだ際、プレイヤーにスコアを100与える
+		// 空中にいる敵が死んだ際、プレイヤーにスコアを200与える
 		if (enemy->IsDead() && !enemy->HasReachedBottom()) {
 			player_->AddScore(200);
 		}

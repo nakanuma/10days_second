@@ -46,10 +46,20 @@ void Enemy::Initialize(Model* modelEnemy, Model* modelLaser, Vector3 position, f
 	anticWorldTransform_.UpdateMatrix();
 
 	// サウンド
-	laserSE_ = audio_->LoadWave("./Resources/sounds/SE_enemy_laser.mp3");
+	laserAudioSH_ = audio_->LoadWave("./Resources/sounds/SE_enemy_laser.mp3");
 }
 
 void Enemy::Update() {
+
+	// サウンドが再生中で、レーザーが当たっていない場合は音を止める
+	if (isLaserSoundPlaying_ && !isHitByLaser_) {
+		audio_->StopWave(laserPlaySH_);
+		isLaserSoundPlaying_ = false;
+	}
+
+	// 毎フレームリセット
+	isHitByLaser_ = false;
+
 	///
 	///	自動で下降させる処理
 	///
@@ -194,6 +204,15 @@ void Enemy::DrawLaser(ViewProjection& viewProjection) {
 }
 
 void Enemy::OnCollision(float incrementSize) {
+
+	 isHitByLaser_ = true;
+
+	// サウンド再生
+	if (!isLaserSoundPlaying_) {
+		laserPlaySH_ = audio_->PlayWave(laserAudioSH_);
+		isLaserSoundPlaying_ = true;
+	}
+
 	///
 	///	当たっているフレーム、引数で指定された値、自身のサイズ(半径)を増加させる
 	///
@@ -207,9 +226,6 @@ void Enemy::OnCollision(float incrementSize) {
 	if (radius_ >= kMaxSize) {
 		isDead_ = true;
 	}
-
-	// あとでサイズとかを変える処理に変更するけどデバッグ用で一旦死亡させる
-	/*isDead_ = true;*/
 }
 
 void Enemy::Debug() {

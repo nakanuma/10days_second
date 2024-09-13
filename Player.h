@@ -1,17 +1,15 @@
 #pragma once
-#include "WorldTransform.h"
-#include "ViewProjection.h"
-#include "Model.h"
-#include "Sprite.h"
+#include "Audio.h"
 #include "Input.h"
 #include "Model.h"
+#include "Sprite.h"
 #include "ViewProjection.h"
 #include "WorldTransform.h"
-#include "Audio.h"
 #include <list>
 #include <vector>
 
 // MyClass
+#include "GameScene.h"
 #include "Laser.h"
 
 class Player {
@@ -21,6 +19,7 @@ public:
 	///
 
 	// デストラクタ
+	Player() = default;
 	~Player();
 
 	/// <summary>
@@ -121,7 +120,7 @@ private:
 
 	///
 	///	RBを押した瞬間の上昇について
-	/// 
+	///
 
 	bool isRising_ = false;
 	float riseStartY_ = 0.0f;
@@ -133,7 +132,7 @@ private:
 	/// 下降時について
 	///
 
-	float currentDescendingSpeed_; // 現在の落下速度。autoDescendingSpeed_まで増加させる
+	float currentDescendingSpeed_;             // 現在の落下速度。autoDescendingSpeed_まで増加させる
 	const float kDescentAcceleration_ = 0.01f; // 現在の落下速度を、毎フレームこの値増加させる
 
 	///
@@ -144,7 +143,6 @@ private:
 	Laser laser_;
 	// モデル
 	Model* modelLaser_ = nullptr;
-
 
 	/* 予備動作に使用 */
 
@@ -157,16 +155,16 @@ private:
 
 	///
 	///	その他パラメーターなど（ImGuiでの調整項目）
-	/// 
-	
+	///
+
 	// レーザー射撃中/非射撃中の自動上昇・下降の速度
 	float autoAscendingSpeed_;
 	float autoDescendingSpeed_;
 
 	///
 	///	スプライト関連
-	/// 
-	
+	///
+
 	/* 左上の残りHP表示 */
 
 	// ハートのスプライト（最大HPの数だけ）
@@ -181,7 +179,6 @@ private:
 	// 0~9までの数字が書いてある数字テクスチャ
 	uint32_t textureNumber_;
 
-
 	///
 	///	サウンド関連
 	///
@@ -191,6 +188,6 @@ private:
 	// レーザーを発射しているときのサウンド
 	uint32_t laserAudioSH_ = 0;
 	uint32_t laserPlaySH_ = 0;
-	// 
+	// 一度だけ流す用のフラフ
 	bool isLaserSoundPlaying_ = false;
 };
