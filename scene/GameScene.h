@@ -11,11 +11,18 @@
 #include "WinApp.h"
 
 #include <list>
+#include <memory>
 
 // MyClass
 #include "Player.h"
+#include "Particle.h"
+#include "Wave.h"
 #include "Enemy.h"
 #include "EnemyAppearMark.h"
+#include "Fade.h"
+#include "DeathParticles.h"
+
+class Wave;
 
 /// <summary>
 /// ゲームシーン
@@ -23,6 +30,15 @@
 class GameScene {
 
 public: // メンバ関数
+
+	// ゲームのフェーズ
+	enum class Phase {
+		kFadeIn,  // フェードイン
+		kMain,    // メイン部
+		kDeath,    // 死亡時
+		kFadeOut, // フェードアウト
+	};
+
 	/// <summary>
 	/// コンストクラタ
 	/// </summary>
@@ -54,6 +70,11 @@ public: // メンバ関数
 	void Debug();
 
 	/// <summary>
+	/// プレイヤーが生きているかの確認
+	/// </summary>
+	void CheckPlayerAlive();
+
+	/// <summary>
 	/// 全ての衝突判定
 	/// </summary>
 	void CheckAllCollision();
@@ -62,6 +83,11 @@ public: // メンバ関数
 	/// 敵の自動生成 && 敵出現マークの生成
 	/// </summary>
 	void EnemyGeneration();
+
+	/// <summary>
+	/// パーティクルの自動生成
+	/// </summary>
+	void ParticleGeneration();
 
 	/// <summary>
 	/// ゲームシーンでの経過時間による流れを全て記述
@@ -96,6 +122,11 @@ public: // メンバ関数
 	void InitializeParameterWAVE2();
 	void InitializeParameterWAVE3();
 
+	/// <summary>
+	/// 終了フラグの取得
+	/// </summary>
+	bool GetIsFinished();
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -107,6 +138,20 @@ private: // メンバ変数
 	
 	// ビュープロジェクション
 	ViewProjection viewProjection_;
+
+	// ウェーブ管理
+	std::unique_ptr<Wave> wave_ = nullptr;
+
+	/*==================================================================================*/
+	// フェード関連
+
+	// フェード
+	std::unique_ptr<Fade> fade_ = nullptr;
+	// 現在のフェーズ
+	Phase phase_ = Phase::kFadeIn;
+
+	// フェードタイマー
+	const float fadeTimer_ = 1.0f;
 
 	///
 	///	プレイヤー関連
@@ -199,12 +244,23 @@ private: // メンバ変数
 
 	///
 	///	その他
-	/// 
+	///
 	
+	// 背景パーティクルのリスト
+	std::list<Particle*> particles_;
+	// 死亡時パーティクル
+	std::unique_ptr<DeathParticles> deathParticles_ = nullptr;
+	// モデル
+	std::unique_ptr<Model> modelDeathParticle_ = nullptr;
+
 	// ゲームシーン経過時間をカウント
 	int32_t gameTime_;
 	// 敵の生成頻度(フレーム)
 	uint32_t nextGenerationFrame_;
+
+	// 終了フラグ
+	bool isFinished_ = false;
+};
 
 	///
 	///	調整可能項目

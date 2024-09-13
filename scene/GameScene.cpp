@@ -40,6 +40,11 @@ GameScene::~GameScene() {
 		delete mark;
 	}
 
+	// パーティクルをすべて開放
+	for (Particle* particle : particles_) {
+		delete particle;
+	}
+
 	///
 	///	レーザー
 	///
@@ -94,6 +99,9 @@ void GameScene::Initialize(int32_t startWave) {
 	// ビュープロジェクション初期化
 	viewProjection_.Initialize();
 
+	// ウェーブ管理
+	wave_ = std::make_unique<Wave>();
+
 	///
 	///	レーザー
 	///
@@ -124,6 +132,8 @@ void GameScene::Initialize(int32_t startWave) {
 
 	///
 	///	スプライト生成
+	///
+	uint32_t textureWhite1x1 = TextureManager::Load("./Resources/images/title/back_white.png");
 	///
 	uint32_t textureWhite1x1 = TextureManager::Load("white1x1.png");
 
@@ -212,21 +222,64 @@ void GameScene::Initialize(int32_t startWave) {
 		gameTime_ = 0;
 	}
 } 
+	///
+
+	// 初期ウェーブ
+	int wave = Wave::GetInstance().GetWave();
+
+	// ゲームシーン経過時間の初期化
+	// gameTime_ = 0;
+
+	// ウェーブの値によって開始ウェーブが異なる
+	if (wave == 1) {
+		// ウェーブ1の開始時間をセット
+		gameTime_ = SecToFrame(0);
+	} else if (wave == 2) {
+		// ウェーブ2の開始時間をセット
+		gameTime_ = SecToFrame(50);
+	} else {
+		// ウェーブの開始時間をセット
+		gameTime_ = SecToFrame(100);
+	}
+
+	///
+	/// 画面遷移(フェード)関連
+	///
+
+	fade_ = std::make_unique<Fade>();
+
+	fade_->Initialize();
+
+	fade_->Start(Fade::Status::FadeIn, fadeTimer_);
+}
 
 void GameScene::Update() {
-	///
-	///	プレイヤー更新
-	///
 
-	player_->Update();
+	switch (phase_) {
+	case Phase::kFadeIn:
+		if (fade_->IsFinished()) {
+			phase_ = Phase::kMain;
+		}
+		///
+		///	プレイヤー更新
+		///
 
-	///
-	///	敵関連の更新
-	///
+		player_->Update();
+		break;
+	case Phase::kMain:
+		///
+		///	プレイヤー更新
+		///
 
-	// 敵全て
-	for (Enemy* enemy : enemies_) {
-		enemy->Update();
+		player_->Update();
+
+		///
+		///	敵関連の更新
+		///
+
+		// 敵全て
+		for (Enemy* enemy : enemies_) {
+			enemy->Update();
 
 		// 空中にいる敵が死んだ際、プレイヤーにスコアを100与える
 		if (enemy->IsDead() && !enemy->HasReachedBottom()) {
@@ -242,24 +295,42 @@ void GameScene::Update() {
 		return false;
 	});
 
-	// 敵出現マーク全て
-	for (EnemyAppearMark* mark : enemyAppearMarks_) {
-		mark->Update();
-	}
-	// 死んだマークをリストから削除
-	enemyAppearMarks_.remove_if([](EnemyAppearMark* mark) {
-		if (mark->IsDead()) {
-			delete mark;
-			return true;
+		// 敵出現マーク全て
+		for (EnemyAppearMark* mark : enemyAppearMarks_) {
+			mark->Update();
 		}
-		return false;
-	});
+		// 死んだマークをリストから削除
+		enemyAppearMarks_.remove_if([](EnemyAppearMark* mark) {
+			if (mark->IsDead()) {
+				delete mark;
+				return true;
+			}
+			return false;
+		});
 
-	///
-	/// ゲームシーン全ての流れの処理
-	///
+		// パーティクルの更新
+		for (Particle* particle : particles_) {
+			particle->Update();
+		}
 
-	GameSceneFlow();
+		///
+		/// プレイヤーの生存確認
+		///
+
+		CheckPlayerAlive();
+
+		///
+		/// パーティクルの自動生成
+		///
+		///
+
+		ParticleGeneration();
+
+		///
+		/// ゲームシーン全ての流れの処理
+		///
+
+		GameSceneFlow();
 
 	///
 	///	残り時間の管理（各WAVE開始時にそのWAVEの残り時間(f)を指定し、左側で表示するために使用）
@@ -353,16 +424,41 @@ void GameScene::Update() {
 	///	全ての衝突判定を行う
 	///
 
-	CheckAllCollision();
+		CheckAllCollision();
+
+		/// ゲームシーン経過時間をカウント
+		gameTime_++;
+
+		break;
+	case Phase::kDeath:
+		// デスパーティクル存在時のみ更新
+		if (deathParticles_) {
+			deathParticles_->Update();
+		}
+		// デスパーティクル消滅後画面遷移開始
+		if (deathParticles_->IsFinished()) {
+			phase_ = Phase::kFadeOut;
+
+			// フェードアウト開始
+			fade_->Start(Fade::Status::FadeOut, fadeTimer_);
+		}
+		break;
+	case Phase::kFadeOut:
+
+		if (fade_->IsFinished()) {
+			isFinished_ = true;
+		}
+		break;
+	}
+
+	// フェードの更新
+	fade_->Update();
 
 	///
 	///	デバッグ情報
 	///
 
 	Debug();
-
-	/// ゲームシーン経過時間をカウント
-	gameTime_++;
 }
 
 void GameScene::Draw() {
@@ -380,6 +476,10 @@ void GameScene::Draw() {
 
 	/* ゲーム背景の描画 */
 	spriteBackGround_->Draw();
+	// パーティクルの描画
+	for (Particle* particle : particles_) {
+		particle->Draw();
+	}
 
 	// スプライト描画後処理
 	Sprite::PostDraw();
@@ -399,7 +499,9 @@ void GameScene::Draw() {
 	///	プレイヤー描画
 	///
 
-	player_->Draw(viewProjection_);
+	if (player_->IsAlive()) {
+		player_->Draw(viewProjection_);
+	}
 
 	///
 	///	敵関連の描画
@@ -415,6 +517,10 @@ void GameScene::Draw() {
 	// 敵の出現マーク全て
 	for (EnemyAppearMark* mark : enemyAppearMarks_) {
 		mark->Draw(viewProjection_);
+	}
+
+	if (!player_->IsAlive()) {
+		deathParticles_->Draw();
 	}
 
 	// 3Dオブジェクト描画後処理
@@ -523,6 +629,8 @@ void GameScene::Draw() {
 }
 
 void GameScene::Debug() {
+#ifdef _DEBUG
+
 	ImGui::Begin("GameScene");
 
 	//// 敵を出現させる
@@ -541,6 +649,30 @@ void GameScene::Debug() {
 	}
 
 	ImGui::End();
+
+#endif
+}
+
+void GameScene::CheckPlayerAlive() {
+
+	// if (!player_->IsAlive()) {
+	//	// フェード切り替え
+	//	phase_ = Phase::kFadeOut;
+	//	fade_->Start(Fade::Status::FadeOut, fadeTimer_);
+	// }
+
+	if (!player_->IsAlive()) {
+		// 死亡演出フェーズに切り替え
+		phase_ = Phase::kDeath;
+		// 自キャラの座標を取得
+		const Vector3& deathParticlesPosition = player_->GetWorldPosition();
+		// デスパーティクルの生成
+		deathParticles_ = std::make_unique<DeathParticles>();
+		// 自キャラの3Dモデルの生成
+		modelDeathParticle_.reset(Model::CreateFromOBJ("deathParticle", true));
+		// デスパーティクルの初期化
+		deathParticles_->Initialize(modelDeathParticle_.get(), &viewProjection_, deathParticlesPosition);
+	}
 }
 
 void GameScene::CheckAllCollision() {
@@ -727,6 +859,41 @@ void GameScene::EnemyGeneration() {
 	}
 }
 
+void GameScene::ParticleGeneration() {
+
+	// フレームカウンタを保持する静的変数
+	static int frameCounter = 0;
+
+	// フレームカウンタを増加
+	frameCounter++;
+
+	// 5フレームごとにパーティクルを生成
+	if (frameCounter % 20 == 0) {
+		///
+		/// パーティクル生成のX座標ランダム化
+		///
+		std::random_device rd;
+		std::mt19937 rng(rd());
+
+		// X座標。指定範囲の間をランダムで生成
+		const float kRightGenerateX = 350;
+		const float kLeftGenerateX = 930;
+		std::uniform_real_distribution<float> distX(kRightGenerateX, kLeftGenerateX);
+		// 指定範囲のランダムなX座標を生成
+		float randomX = distX(rng);
+
+		// Y座標。固定（800で生成）
+		const float kGenerateY = 800.0f;
+
+		// パーティクルの座標を設定
+		Particle* newParticle = new Particle();
+		newParticle->Initialize({randomX, kGenerateY});
+
+		// パーティクルリストに追加
+		particles_.push_back(newParticle);
+	}
+}
+
 void GameScene::GameSceneFlow() {
 	// ここで各項目リセット
 	if (gameTime_ == SecToFrame(0)) {
@@ -878,12 +1045,14 @@ void GameScene::GameSceneFlow() {
 	}
 
 	///
-	///	150~155秒 : 何もしない
+	///	150秒~ : 終了
 	///
 
-	///
-	///	155~ : フェードしてセレクトへ戻る
-	///
+	if (gameTime_ >= SecToFrame(150)) {
+		// フェード切り替え
+		phase_ = Phase::kFadeOut;
+		fade_->Start(Fade::Status::FadeOut, fadeTimer_);
+	}
 }
 
 void GameScene::WaveSpriteMove() {

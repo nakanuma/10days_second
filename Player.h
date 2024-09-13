@@ -4,6 +4,9 @@
 #include "Model.h"
 #include "Sprite.h"
 #include "Input.h"
+#include "Model.h"
+#include "ViewProjection.h"
+#include "WorldTransform.h"
 #include <list>
 #include <vector>
 
@@ -37,6 +40,8 @@ public:
 	void Invincible();
 	// 衝突時コールバック（HPを減らして無敵にする）
 	void OnCollision();
+	// 生存しているかの確認
+	void CheckIsAlive();
 
 	// 描画
 	void Draw(ViewProjection& viewProjection);
@@ -51,8 +56,8 @@ public:
 
 	///
 	///	アクセッサ
-	/// 
-	
+	///
+
 	// ワールド座標取得
 	Vector3 GetWorldPosition();
 	// 半径を取得
@@ -67,18 +72,20 @@ public:
 	void ResetScore() { score_ = 0; }
 	// HPのリセット（WAVE移行時に呼ぶ）
 	void ResetHP() { hp_ = 3; }
+	// 生存フラグの取得
+	bool IsAlive() { return isAlive_; }
 
 private:
 	///
 	///	汎用機能
-	/// 
-	
+	///
+
 	Input* input_ = nullptr;
 
 	///
 	///	プレイヤーの基本的な情報
-	/// 
-	
+	///
+
 	// ワールドトランスフォーム
 	WorldTransform worldTransform_;
 	// モデル
@@ -98,6 +105,8 @@ private:
 	const int32_t kInvincibleTime_ = 120;
 	// 無敵時間カウント
 	int32_t invincibleCount_;
+	// 生存フラグ
+	bool isAlive_ = true;
 
 	/*RBを押した瞬間のみ、プレイヤーを上に跳ねさせる処理に使用*/
 
@@ -123,8 +132,8 @@ private:
 
 	///
 	///	レーザー関連の情報
-	/// 
-	
+	///
+
 	// レーザー
 	Laser laser_;
 	// モデル
