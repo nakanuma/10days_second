@@ -78,6 +78,8 @@ private: // メンバ変数
 	bool isFinished_ = false;
 	// タイトルセレクト
 	bool isTitleSelect_ = false;
+	// プレタイトルセレクト
+	bool isPreTitleSelect_ = false;
 
 
 	/*==================================================================================*/

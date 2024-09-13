@@ -1,4 +1,4 @@
-#include "GameScene.h" 
+#include "GameScene.h"
 #include "TextureManager.h"
 #include "imgui.h"
 
@@ -89,7 +89,7 @@ GameScene::~GameScene() {
 	delete spriteRemainingTimeText_;
 }
 
-void GameScene::Initialize(int32_t startWave) {
+void GameScene::Initialize() {
 	/* 各種初期化 */
 
 	dxCommon_ = DirectXCommon::GetInstance();
@@ -134,8 +134,6 @@ void GameScene::Initialize(int32_t startWave) {
 	///	スプライト生成
 	///
 	uint32_t textureWhite1x1 = TextureManager::Load("./Resources/images/title/back_white.png");
-	///
-	uint32_t textureWhite1x1 = TextureManager::Load("white1x1.png");
 
 	/* 各ウェーブ開始時に出てくるウェーブの文字（1, 2, 3のテクスチャハンドルをセットして使い回す）*/
 	wave1TextureHandle_ = TextureManager::Load("images/WAVE1.png");
@@ -146,7 +144,7 @@ void GameScene::Initialize(int32_t startWave) {
 	spriteWaveNum_->SetAnchorPoint({0.5f, 0.5f}); // アンカーポイントを中心に設定
 
 	/* 背景 */
-	spriteBackGround_ = Sprite::Create(textureWhite1x1, {0.0f, 0.0f}, {0.5f, 0.5f, 0.5f, 1.0f});
+	spriteBackGround_ = Sprite::Create(textureWhite1x1, {0.0f, 0.0f});
 	spriteBackGround_->SetSize({1280.0f, 720.0f});
 
 	/* ゲーム領域ではない画面両側を隠すスプライト */
@@ -204,31 +202,8 @@ void GameScene::Initialize(int32_t startWave) {
 	///	その他
 	///
 
-	// ゲームシーン経過時間の初期化（基本は0にする）
-	switch (startWave) {
-	case 1:
-		gameTime_ = 0;
-		break;
-
-	case 2:
-		gameTime_ = 3000;
-		break;
-
-	case 3:
-		gameTime_ = 6000;
-		break;
-
-	default:
-		gameTime_ = 0;
-	}
-} 
-	///
-
 	// 初期ウェーブ
 	int wave = Wave::GetInstance().GetWave();
-
-	// ゲームシーン経過時間の初期化
-	// gameTime_ = 0;
 
 	// ウェーブの値によって開始ウェーブが異なる
 	if (wave == 1) {
@@ -237,9 +212,11 @@ void GameScene::Initialize(int32_t startWave) {
 	} else if (wave == 2) {
 		// ウェーブ2の開始時間をセット
 		gameTime_ = SecToFrame(50);
-	} else {
+	} else if (wave == 3) {
 		// ウェーブの開始時間をセット
 		gameTime_ = SecToFrame(100);
+	} else {
+		gameTime_ = SecToFrame(0);
 	}
 
 	///
@@ -254,6 +231,21 @@ void GameScene::Initialize(int32_t startWave) {
 }
 
 void GameScene::Update() {
+
+	/*WAVE1の場合*/
+	uint32_t w1s1score = 200;  // このスコアに達してたら星1
+	uint32_t w1s2score = 600;  // このスコアに達してたら星2
+	uint32_t w1s3score = 1000; // このスコアに達してたら星3
+
+	/*WAVE2の場合*/
+	uint32_t w2s1score = 200;  // このスコアに達してたら星1
+	uint32_t w2s2score = 600;  // このスコアに達してたら星2
+	uint32_t w2s3score = 1000; // このスコアに達してたら星3
+
+	/*WAVE3の場合*/
+	uint32_t w3s1score = 200;  // このスコアに達してたら星1
+	uint32_t w3s2score = 600;  // このスコアに達してたら星2
+	uint32_t w3s3score = 1000; // このスコアに達してたら星3
 
 	switch (phase_) {
 	case Phase::kFadeIn:
@@ -281,19 +273,19 @@ void GameScene::Update() {
 		for (Enemy* enemy : enemies_) {
 			enemy->Update();
 
-		// 空中にいる敵が死んだ際、プレイヤーにスコアを100与える
-		if (enemy->IsDead() && !enemy->HasReachedBottom()) {
-			player_->AddScore(200);
+			// 空中にいる敵が死んだ際、プレイヤーにスコアを100与える
+			if (enemy->IsDead() && !enemy->HasReachedBottom()) {
+				player_->AddScore(200);
+			}
 		}
-	}
-	// 死んだ敵をリストから削除
-	enemies_.remove_if([](Enemy* enemy) {
-		if (enemy->IsDead()) {
-			delete enemy;
-			return true;
-		}
-		return false;
-	});
+		// 死んだ敵をリストから削除
+		enemies_.remove_if([](Enemy* enemy) {
+			if (enemy->IsDead()) {
+				delete enemy;
+				return true;
+			}
+			return false;
+		});
 
 		// 敵出現マーク全て
 		for (EnemyAppearMark* mark : enemyAppearMarks_) {
@@ -332,97 +324,97 @@ void GameScene::Update() {
 
 		GameSceneFlow();
 
-	///
-	///	残り時間の管理（各WAVE開始時にそのWAVEの残り時間(f)を指定し、左側で表示するために使用）
-	///
+		///
+		///	残り時間の管理（各WAVE開始時にそのWAVEの残り時間(f)を指定し、左側で表示するために使用）
+		///
 
-	// 残り時間が存在している場合、減らしていく
-	if (remainingTime_ > 0) {
-		remainingTime_--;
-		// 残り時間が無くなった場合、0で固定
-	} else {
-		remainingTime_ = 0;
-	}
-
-	///
-	///	各WAVEリザルト表示時、現在スコアに応じて表示する星の数を設定
-	///
-
-	/*WAVE1の場合*/
-	uint32_t w1s1score = 200;  // このスコアに達してたら星1
-	uint32_t w1s2score = 600;  // このスコアに達してたら星2
-	uint32_t w1s3score = 1000; // このスコアに達してたら星3
-
-	if (gameTime_ >= SecToFrame(45) && gameTime_ <= SecToFrame(50)) {
-		// 星1個の場合
-		if (player_->GetScore() >= w1s1score && player_->GetScore() < w1s2score) {
-			displayStarNum_ = 1;
+		// 残り時間が存在している場合、減らしていく
+		if (remainingTime_ > 0) {
+			remainingTime_--;
+			// 残り時間が無くなった場合、0で固定
+		} else {
+			remainingTime_ = 0;
 		}
 
-		// 星2個の場合
-		if (player_->GetScore() >= w1s2score && player_->GetScore() < w1s3score) {
-			displayStarNum_ = 2;
+		///
+		///	各WAVEリザルト表示時、現在スコアに応じて表示する星の数を設定
+		///
+
+		/*WAVE1の場合*/
+		//uint32_t w1s1score = 200;  // このスコアに達してたら星1
+		//uint32_t w1s2score = 600;  // このスコアに達してたら星2
+		//uint32_t w1s3score = 1000; // このスコアに達してたら星3
+
+		if (gameTime_ >= SecToFrame(45) && gameTime_ <= SecToFrame(50)) {
+			// 星1個の場合
+			if (player_->GetScore() >= w1s1score && player_->GetScore() < w1s2score) {
+				displayStarNum_ = 1;
+			}
+
+			// 星2個の場合
+			if (player_->GetScore() >= w1s2score && player_->GetScore() < w1s3score) {
+				displayStarNum_ = 2;
+			}
+
+			// 星3個の場合
+			if (player_->GetScore() >= w1s3score) {
+				displayStarNum_ = 3;
+			}
 		}
 
-		// 星3個の場合
-		if (player_->GetScore() >= w1s3score) {
-			displayStarNum_ = 3;
-		}
-	}
+		/*WAVE2の場合*/
+		//uint32_t w2s1score = 200;  // このスコアに達してたら星1
+		//uint32_t w2s2score = 600;  // このスコアに達してたら星2
+		//uint32_t w2s3score = 1000; // このスコアに達してたら星3
+		if (gameTime_ >= SecToFrame(95) && gameTime_ <= SecToFrame(100)) {
+			// 星1個の場合
+			if (player_->GetScore() >= w2s1score && player_->GetScore() < w2s2score) {
+				displayStarNum_ = 1;
+			}
 
-	/*WAVE2の場合*/
-	uint32_t w2s1score = 200;  // このスコアに達してたら星1
-	uint32_t w2s2score = 600;  // このスコアに達してたら星2
-	uint32_t w2s3score = 1000; // このスコアに達してたら星3
-	if (gameTime_ >= SecToFrame(95) && gameTime_ <= SecToFrame(100)) {
-		// 星1個の場合
-		if (player_->GetScore() >= w2s1score && player_->GetScore() < w2s2score) {
-			displayStarNum_ = 1;
-		}
+			// 星2個の場合
+			if (player_->GetScore() >= w2s2score && player_->GetScore() < w2s3score) {
+				displayStarNum_ = 2;
+			}
 
-		// 星2個の場合
-		if (player_->GetScore() >= w2s2score && player_->GetScore() < w2s3score) {
-			displayStarNum_ = 2;
-		}
-
-		// 星3個の場合
-		if (player_->GetScore() >= w2s3score) {
-			displayStarNum_ = 3;
-		}
-	}
-
-	/*WAVE3の場合*/
-	uint32_t w3s1score = 200;  // このスコアに達してたら星1
-	uint32_t w3s2score = 600;  // このスコアに達してたら星2
-	uint32_t w3s3score = 1000; // このスコアに達してたら星3
-	if (gameTime_ >= SecToFrame(145) && gameTime_ <= SecToFrame(150)) {
-		// 星1個の場合
-		if (player_->GetScore() >= w3s1score && player_->GetScore() < w3s2score) {
-			displayStarNum_ = 1;
+			// 星3個の場合
+			if (player_->GetScore() >= w2s3score) {
+				displayStarNum_ = 3;
+			}
 		}
 
-		// 星2個の場合
-		if (player_->GetScore() >= w3s2score && player_->GetScore() < w3s3score) {
-			displayStarNum_ = 2;
+		/*WAVE3の場合*/
+		//uint32_t w3s1score = 200;  // このスコアに達してたら星1
+		//uint32_t w3s2score = 600;  // このスコアに達してたら星2
+		//uint32_t w3s3score = 1000; // このスコアに達してたら星3
+		if (gameTime_ >= SecToFrame(145) && gameTime_ <= SecToFrame(150)) {
+			// 星1個の場合
+			if (player_->GetScore() >= w3s1score && player_->GetScore() < w3s2score) {
+				displayStarNum_ = 1;
+			}
+
+			// 星2個の場合
+			if (player_->GetScore() >= w3s2score && player_->GetScore() < w3s3score) {
+				displayStarNum_ = 2;
+			}
+
+			// 星3個の場合
+			if (player_->GetScore() >= w3s3score) {
+				displayStarNum_ = 3;
+			}
 		}
 
-		// 星3個の場合
-		if (player_->GetScore() >= w3s3score) {
-			displayStarNum_ = 3;
+		///
+		///	プレイヤーの体力が0になったらフェードしてセレクトへ戻る
+		///
+
+		if (player_->GetHP() <= 0) {
+			// フェードしてセレクト画面へ
 		}
-	}
 
-	///
-	///	プレイヤーの体力が0になったらフェードしてセレクトへ戻る
-	///
-
-	if (player_->GetHP() <= 0) {
-		// フェードしてセレクト画面へ
-	}
-
-	///
-	///	全ての衝突判定を行う
-	///
+		///
+		///	全ての衝突判定を行う
+		///
 
 		CheckAllCollision();
 
@@ -622,6 +614,13 @@ void GameScene::Draw() {
 
 	player_->DrawUI();
 
+
+	///
+	/// フェードの描画
+	///
+
+	fade_->Draw();
+
 	// スプライト描画後処理
 	Sprite::PostDraw();
 
@@ -647,6 +646,9 @@ void GameScene::Debug() {
 	if (ImGui::Button("AddScore")) {
 		player_->AddScore(200);
 	}
+
+	// 現在の Behavior を表示
+	ImGui::Text("Current Phase: %s", BehaviorToString(phase_));
 
 	ImGui::End();
 
@@ -1186,3 +1188,5 @@ void GameScene::InitializeParameterWAVE3() {
 	enemySpawnRate_ = 180;
 	enemyFallSpeed_ = 0.05f;
 }
+
+bool GameScene::GetIsFinished() { return isFinished_; }

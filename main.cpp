@@ -139,13 +139,13 @@ int WINAPI WinMain(HINSTANCE, HINSTANCE, LPSTR, int) {
 		case Scene::kGame:
 			if (gameScene->GetIsFinished()) {
 				// シーン変更
-				scene = Scene::kTitle;
+				scene = Scene::kSelect;
 				// 旧シーンの開放
 				delete gameScene;
 				gameScene = nullptr;
 				// シーンの生成と初期化
-				titleScene = new TitleScene();
-				titleScene->Initialize();
+				selectScene = new SelectScene();
+				selectScene->Initialize();
 			}
 		}
 	};

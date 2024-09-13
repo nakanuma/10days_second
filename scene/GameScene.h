@@ -4,23 +4,23 @@
 #include "DirectXCommon.h"
 #include "Input.h"
 #include "Model.h"
+#include "PrimitiveDrawer.h"
 #include "Sprite.h"
 #include "ViewProjection.h"
-#include "WorldTransform.h"
-#include "PrimitiveDrawer.h"
 #include "WinApp.h"
+#include "WorldTransform.h"
 
 #include <list>
 #include <memory>
 
 // MyClass
-#include "Player.h"
-#include "Particle.h"
-#include "Wave.h"
+#include "DeathParticles.h"
 #include "Enemy.h"
 #include "EnemyAppearMark.h"
 #include "Fade.h"
-#include "DeathParticles.h"
+#include "Particle.h"
+#include "Player.h"
+#include "Wave.h"
 
 class Wave;
 
@@ -30,12 +30,11 @@ class Wave;
 class GameScene {
 
 public: // メンバ関数
-
 	// ゲームのフェーズ
 	enum class Phase {
 		kFadeIn,  // フェードイン
 		kMain,    // メイン部
-		kDeath,    // 死亡時
+		kDeath,   // 死亡時
 		kFadeOut, // フェードアウト
 	};
 
@@ -52,7 +51,7 @@ public: // メンバ関数
 	/// <summary>
 	/// 初期化
 	/// </summary>
-	void Initialize(int32_t startWave);
+	void Initialize();
 
 	/// <summary>
 	/// 毎フレーム処理
@@ -127,6 +126,24 @@ public: // メンバ関数
 	/// </summary>
 	bool GetIsFinished();
 
+	// Behavior 型を文字列に変換する関数
+	// Behavior 型を文字列に変換する関数
+	const char* BehaviorToString(Phase phase) {
+		switch (phase) {
+		case Phase::kFadeIn:
+			return "FadeIn";
+		case Phase::kMain:
+			return "Main";
+		case Phase::kDeath:
+			return "Death";
+		case Phase::kFadeOut:
+			return "FadeOut";
+		// 他の状態を追加
+		default:
+			return "Unknown";
+		}
+	}
+
 private: // メンバ変数
 	DirectXCommon* dxCommon_ = nullptr;
 	Input* input_ = nullptr;
@@ -135,7 +152,7 @@ private: // メンバ変数
 	/// <summary>
 	/// ゲームシーン用
 	/// </summary>
-	
+
 	// ビュープロジェクション
 	ViewProjection viewProjection_;
 
@@ -155,7 +172,7 @@ private: // メンバ変数
 
 	///
 	///	プレイヤー関連
-	/// 
+	///
 
 	// プレイヤー本体
 	Player* player_ = nullptr;
@@ -165,13 +182,13 @@ private: // メンバ変数
 
 	///
 	///	敵関連
-	/// 
+	///
 
 	// 敵のリスト
 	std::list<Enemy*> enemies_;
 	// 敵出現マークのリスト
 	std::list<EnemyAppearMark*> enemyAppearMarks_;
-	
+
 	// 敵のモデル
 	Model* modelEnemy_ = nullptr;
 	// 敵出現マークのモデル
@@ -179,7 +196,7 @@ private: // メンバ変数
 
 	///
 	///	レーザー関連
-	/// 
+	///
 
 	// モデル（敵のレーザー）
 	Model* modelLaser_ = nullptr;
@@ -188,7 +205,7 @@ private: // メンバ変数
 
 	///
 	///	スプライト
-	/// 
+	///
 
 	// 各ウェーブ開始時に出てくるウェーブの文字（1,2,3のテクスチャハンドルをセットして使い回す）
 	Sprite* spriteWaveNum_ = nullptr;
@@ -245,7 +262,7 @@ private: // メンバ変数
 	///
 	///	その他
 	///
-	
+
 	// 背景パーティクルのリスト
 	std::list<Particle*> particles_;
 	// 死亡時パーティクル
@@ -260,7 +277,6 @@ private: // メンバ変数
 
 	// 終了フラグ
 	bool isFinished_ = false;
-};
 
 	///
 	///	調整可能項目

@@ -103,7 +103,11 @@ void SelectScene::Update() {
 	case Phase::kFadeOut:
 
 		if (fade_->IsFinished()) {
-			isFinished_ = true;
+			if (!isPreTitleSelect_) {
+				isFinished_ = true;
+			} else {
+				isTitleSelect_ = true;
+			}
 		}
 		break;
 	}
@@ -317,7 +321,10 @@ void SelectScene::Operation() {
 	if (joyState.Gamepad.wButtons & XINPUT_GAMEPAD_X) {
 		if (!(joyPreState.Gamepad.wButtons & XINPUT_GAMEPAD_X)) {
 			// タイトルセレクトをtrueに
-			isTitleSelect_ = true;
+			isPreTitleSelect_ = true;
+			// フェード切り替え
+			phase_ = Phase::kFadeOut;
+			fade_->Start(Fade::Status::FadeOut, fadeTimer_);
 		}
 	}
 }
